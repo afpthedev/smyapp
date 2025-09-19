@@ -38,6 +38,7 @@ export default tseslint.config(
       },
       parserOptions: {
         project: ['./tsconfig.json', './tsconfig.test.json'],
+        ecmaVersion: 2023,
       },
     },
     rules: {

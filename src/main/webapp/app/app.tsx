@@ -1,11 +1,14 @@
 import 'react-toastify/dist/ReactToastify.css';
 import './app.scss';
 import 'app/config/dayjs';
+import 'antd/dist/reset.css';
 
 import React, { useEffect } from 'react';
 import { Card } from 'reactstrap';
 import { BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
+import { ConfigProvider } from 'antd';
+import trTR from 'antd/lib/locale/tr_TR';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getSession } from 'app/shared/reducers/authentication';
@@ -18,6 +21,15 @@ import { AUTHORITIES } from 'app/config/constants';
 import AppRoutes from 'app/routes';
 
 const baseHref = document.querySelector('base').getAttribute('href').replace(/\/$/, '');
+
+// Ant Design tema konfigürasyonu
+const antdTheme = {
+  token: {
+    colorPrimary: '#1890ff',
+    borderRadius: 6,
+    colorBgContainer: '#ffffff',
+  },
+};
 
 export const App = () => {
   const dispatch = useAppDispatch();
@@ -35,28 +47,30 @@ export const App = () => {
 
   const paddingTop = '60px';
   return (
-    <BrowserRouter basename={baseHref}>
-      <div className="app-container" style={{ paddingTop }}>
-        <ToastContainer position="top-left" className="toastify-container" toastClassName="toastify-toast" />
-        <ErrorBoundary>
-          <Header
-            isAuthenticated={isAuthenticated}
-            isAdmin={isAdmin}
-            ribbonEnv={ribbonEnv}
-            isInProduction={isInProduction}
-            isOpenAPIEnabled={isOpenAPIEnabled}
-          />
-        </ErrorBoundary>
-        <div className="container-fluid view-container" id="app-view-container">
-          <Card className="jh-card">
-            <ErrorBoundary>
-              <AppRoutes />
-            </ErrorBoundary>
-          </Card>
-          <Footer />
+    <ConfigProvider locale={trTR}>
+      <BrowserRouter basename={baseHref}>
+        <div className="app-container" style={{ paddingTop }}>
+          <ToastContainer position="top-left" className="toastify-container" toastClassName="toastify-toast" />
+          <ErrorBoundary>
+            <Header
+              isAuthenticated={isAuthenticated}
+              isAdmin={isAdmin}
+              ribbonEnv={ribbonEnv}
+              isInProduction={isInProduction}
+              isOpenAPIEnabled={isOpenAPIEnabled}
+            />
+          </ErrorBoundary>
+          <div className="container-fluid view-container" id="app-view-container">
+            <Card className="jh-card">
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
+            </Card>
+            <Footer />
+          </div>
         </div>
-      </div>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ConfigProvider>
   );
 };
 

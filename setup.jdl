@@ -1,9 +1,11 @@
 entity Appointment {
-  title String required,
-  description String,
+  title String required maxlength(100),
+  description TextBlob,
   appointmentDate ZonedDateTime required,
-  duration Integer,
-  status AppointmentStatus required
+  duration Integer required min(1) max(1440),
+  status AppointmentStatus required,
+  createdDate Instant,
+  lastModifiedDate Instant
 }
 
 enum AppointmentStatus {
@@ -11,12 +13,39 @@ enum AppointmentStatus {
 }
 
 entity AppointmentType {
-  name String required,
-  color String
+  name String required maxlength(50),
+  description String maxlength(200),
+  color String pattern(/^#[0-9A-Fa-f]{6}$/),
+  isActive Boolean required
 }
 
-relationship ManyToOne {
-  Appointment{createdBy(login)} to User,
-  Appointment{participant(login)} to User,
-  Appointment{type(name)} to AppointmentType
+entity Notification {
+  type NotificationType required,
+  message String required maxlength(500),
+  sentDate Instant,
+  isRead Boolean required,
+  recipientEmail String,
+  recipientPhone String
 }
+
+enum NotificationType {
+  EMAIL, SMS, SYSTEM
+}
+
+// İlişkiler
+relationship ManyToOne {
+  Appointment{createdBy(login)} to User with builtInEntity,
+  Appointment{type(name)} to AppointmentType,
+  Notification{appointment(title)} to Appointment,
+  Notification{recipient(login)} to User with builtInEntity
+}
+
+relationship ManyToMany {
+  Appointment{participants(login)} to User with builtInEntity
+}
+
+// Konfigürasyonlar
+paginate Appointment, AppointmentType, Notification with pagination
+service all with serviceImpl
+dto all with mapstruct
+filter Appointment, AppointmentType

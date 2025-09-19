@@ -18,17 +18,19 @@ setupAxiosInterceptors(() => actions.clearAuthentication('login.error.unauthoriz
 loadIcons();
 
 const rootEl = document.getElementById('root');
-const root = createRoot(rootEl);
+if (rootEl) {
+  const root = createRoot(rootEl);
 
-const render = Component =>
-  root.render(
-    <ErrorBoundary>
-      <Provider store={store}>
-        <div>
-          <Component />
-        </div>
-      </Provider>
-    </ErrorBoundary>,
-  );
+  const render = Component =>
+    root.render(
+      <ErrorBoundary>
+        <Provider store={store}>
+          <div>
+            <Component />
+          </div>
+        </Provider>
+      </ErrorBoundary>,
+    );
 
-render(AppComponent);
+  render(AppComponent);
+}
