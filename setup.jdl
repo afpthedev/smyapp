@@ -1,0 +1,22 @@
+entity Appointment {
+  title String required,
+  description String,
+  appointmentDate ZonedDateTime required,
+  duration Integer,
+  status AppointmentStatus required
+}
+
+enum AppointmentStatus {
+  PLANNED, CONFIRMED, CANCELLED, COMPLETED
+}
+
+entity AppointmentType {
+  name String required,
+  color String
+}
+
+relationship ManyToOne {
+  Appointment{createdBy(login)} to User,
+  Appointment{participant(login)} to User,
+  Appointment{type(name)} to AppointmentType
+}
