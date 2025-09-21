@@ -31,8 +31,8 @@ const Login = () => {
       const result = await authService.login(credentials);
       
       if (result.success) {
-        // Başarılı giriş
-        navigate('/admin/dashboard');
+        // Başarılı giriş - doğru route'a yönlendir
+        navigate('/dashboard');
       } else {
         // Hata durumu
         setError(result.error || 'Giriş başarısız. Lütfen bilgilerinizi kontrol ediniz.');
@@ -114,7 +114,7 @@ const Login = () => {
           
           <div className="signup-section">
             <span>Don't have an account? </span>
-            <a href="#" className="signup-link">Sign up</a>
+            <a href="#" className="signup-link" onClick={(e) => { e.preventDefault(); navigate('/api/admin/register'); }}>Sign up</a>
           </div>
         </div>
       </div>

@@ -1,8 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
+import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import authService from './services/authService';
+import './styles.css';
 
 // Protected Route bileşeni
 const ProtectedRoute = ({ children }) => {
@@ -21,14 +23,20 @@ function App() {
           {/* Login sayfası */}
           <Route path="/api/admin/login" element={<Login />} />
           
-          {/* Korumalı admin rotaları */}
-          <Route path="/admin/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
+          {/* Register sayfası */}
+          <Route path="/api/admin/register" element={<Register />} />
           
-          {/* Diğer rotalar için login'e yönlendir */}
+          {/* Dashboard - korumalı route */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Diğer tüm route'lar login'e yönlendirilir */}
           <Route path="*" element={<Navigate to="/api/admin/login" replace />} />
         </Routes>
       </div>

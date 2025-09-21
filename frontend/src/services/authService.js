@@ -4,15 +4,21 @@ class AuthService {
   // Login method
   async login(credentials) {
     try {
+      console.log('Login attempt with:', credentials.username);
+      
       const response = await apiService.post('/authenticate', {
         username: credentials.username,
         password: credentials.password,
         rememberMe: credentials.rememberMe || false
       });
 
+      console.log('Login response:', response);
+
       if (response.success && response.data) {
         // JWT token'ı localStorage'a kaydet
         const token = response.data.id_token;
+        console.log('Token received:', token ? 'Yes' : 'No');
+        
         localStorage.setItem('jwt_token', token);
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('username', credentials.username);
@@ -25,6 +31,7 @@ class AuthService {
           }
         };
       } else {
+        console.log('Login failed:', response.error);
         return {
           success: false,
           error: response.error || 'Giriş başarısız'
@@ -35,6 +42,36 @@ class AuthService {
       return {
         success: false,
         error: 'Giriş sırasında bir hata oluştu'
+      };
+    }
+  }
+
+  // Register method
+  async register(userData) {
+    try {
+      const response = await apiService.post('/register', {
+        login: userData.username,
+        email: userData.email,
+        password: userData.password,
+        langKey: 'en'
+      });
+
+      if (response.success) {
+        return {
+          success: true,
+          message: 'Registration successful'
+        };
+      } else {
+        return {
+          success: false,
+          message: response.error || 'Registration failed'
+        };
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      return {
+        success: false,
+        message: 'Registration failed. Please try again.'
       };
     }
   }
