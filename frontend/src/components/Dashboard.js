@@ -1,54 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  FaHome,
+  FaCalendarAlt,
+  FaUsers,
+  FaDollarSign,
+  FaCog,
+  FaSignOutAlt,
+  FaSearch,
+  FaPlus,
+  FaMoon,
+  FaSun
+} from 'react-icons/fa';
+import './Dashboard.css';
 import authService from '../services/authService';
+import DashboardPage from './DashboardPage';
+import ClientsPage from './ClientsPage';
+import CalendarPage from './CalendarPage';
+import FinancesPage from './FinancesPage';
+import SettingsPage from './SettingsPage';
 
 const Dashboard = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('clients');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [clients, setClients] = useState([
-    {
-      id: 1,
-      name: 'Liam Carter',
-      phone: '(555) 123-4567',
-      email: 'liam.carter@email.com',
-      appointments: 3,
-      lastAppointment: '2023-11-15'
-    },
-    {
-      id: 2,
-      name: 'Olivia Bennett',
-      phone: '(555) 987-6543',
-      email: 'olivia.bennett@email.com',
-      appointments: 2,
-      lastAppointment: '2023-10-20'
-    },
-    {
-      id: 3,
-      name: 'Ethan Harper',
-      phone: '(555) 246-8013',
-      email: 'ethan.harper@email.com',
-      appointments: 1,
-      lastAppointment: '2023-09-05'
-    },
-    {
-      id: 4,
-      name: 'Sophia Evans',
-      phone: '(555) 135-7924',
-      email: 'sophia.evans@email.com',
-      appointments: 4,
-      lastAppointment: '2023-12-01'
-    },
-    {
-      id: 5,
-      name: 'Noah Foster',
-      phone: '(555) 369-1212',
-      email: 'noah.foster@email.com',
-      appointments: 2,
-      lastAppointment: '2023-11-28'
-    }
-  ]);
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -114,28 +90,28 @@ const Dashboard = () => {
             className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            <span className="nav-icon">📊</span>
+            <span className="nav-icon">🏠</span>
             Dashboard
           </button>
           <button
             className={`nav-item ${activeTab === 'calendar' ? 'active' : ''}`}
             onClick={() => setActiveTab('calendar')}
           >
-            <span className="nav-icon">📅</span>
+            <span className="nav-icon">🗓️</span>
             Calendar
           </button>
           <button
             className={`nav-item ${activeTab === 'clients' ? 'active' : ''}`}
             onClick={() => setActiveTab('clients')}
           >
-            <span className="nav-icon">👥</span>
+            <span className="nav-icon">👤</span>
             Clients
           </button>
           <button
             className={`nav-item ${activeTab === 'finances' ? 'active' : ''}`}
             onClick={() => setActiveTab('finances')}
           >
-            <span className="nav-icon">💰</span>
+            <span className="nav-icon">💳</span>
             Finances
           </button>
           <button
@@ -224,8 +200,153 @@ const Dashboard = () => {
 
         {activeTab === 'calendar' && (
           <div className="calendar-page">
-            <h1>Calendar</h1>
-            <p>Takvim özelliği yakında eklenecek...</p>
+            <div className="page-header">
+              <h1>Calendar</h1>
+              <div className="calendar-controls">
+                <button className="calendar-view-btn active">Week</button>
+                <button className="calendar-view-btn">Day</button>
+              </div>
+            </div>
+
+            <div className="calendar-container">
+              <div className="calendar-header">
+                <div className="calendar-nav">
+                  <button className="nav-btn">‹</button>
+                  <h2>Today's Appointments</h2>
+                  <button className="nav-btn">›</button>
+                </div>
+              </div>
+
+              <div className="calendar-grid">
+                <div className="calendar-sidebar">
+                  <div className="artist-profile">
+                    <div className="artist-avatar">
+                      <span>AV</span>
+                    </div>
+                    <h3>Alex Volkov</h3>
+                    <p>Realism & Blackwork</p>
+                  </div>
+
+                  <div className="artist-profile">
+                    <div className="artist-avatar">
+                      <span>RB</span>
+                    </div>
+                    <h3>Raven Blackwood</h3>
+                    <p>Neo-Traditional</p>
+                  </div>
+
+                  <div className="artist-profile">
+                    <div className="artist-avatar">
+                      <span>JT</span>
+                    </div>
+                    <h3>Jax Teller</h3>
+                    <p>American Traditional</p>
+                  </div>
+                </div>
+
+                <div className="calendar-main">
+                  <div className="appointment-slot">
+                    <div className="appointment-card purple">
+                      <div className="appointment-time">10:00 - 12:00</div>
+                      <div className="appointment-client">Olivia Wilde</div>
+                      <div className="appointment-type">Floral Sleeve</div>
+                    </div>
+                  </div>
+
+                  <div className="appointment-slot">
+                    <div className="appointment-card blue">
+                      <div className="appointment-time">11:00 - 13:00</div>
+                      <div className="appointment-client">Luna Lovegood</div>
+                      <div className="appointment-type">Mystical Creature</div>
+                    </div>
+                  </div>
+
+                  <div className="appointment-slot">
+                    <div className="appointment-card pink">
+                      <div className="appointment-time">12:00 - 16:00</div>
+                      <div className="appointment-client">Gemma Teller</div>
+                      <div className="appointment-type">Rose & Dagger</div>
+                    </div>
+                  </div>
+
+                  <div className="appointment-slot">
+                    <div className="appointment-card green">
+                      <div className="appointment-time">13:00 - 15:30</div>
+                      <div className="appointment-client">James Dean</div>
+                      <div className="appointment-type">Geometric Chest Piece</div>
+                    </div>
+                  </div>
+
+                  <div className="appointment-slot">
+                    <div className="appointment-card orange">
+                      <div className="appointment-time">14:00 - 17:00</div>
+                      <div className="appointment-client">Sirius Black</div>
+                      <div className="appointment-type">Large Back Tattoo</div>
+                    </div>
+                  </div>
+
+                  <div className="appointment-slot">
+                    <div className="appointment-card red">
+                      <div className="appointment-time">17:30 - 18:30</div>
+                      <div className="appointment-client">Draco Malfoy</div>
+                      <div className="appointment-type">Small Hand Tattoo</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="appointments-sidebar">
+                  <h3>Today's Appointments</h3>
+
+                  <div className="appointment-item">
+                    <div className="appointment-avatar">
+                      <span>OW</span>
+                    </div>
+                    <div className="appointment-info">
+                      <h4>Olivia Wilde</h4>
+                      <p>(555) 123-4567</p>
+                      <span className="appointment-status approved">Approved</span>
+                    </div>
+                    <div className="appointment-actions">
+                      <button className="action-btn">✏️</button>
+                      <button className="action-btn">❌</button>
+                    </div>
+                  </div>
+
+                  <div className="appointment-item">
+                    <div className="appointment-avatar">
+                      <span>JD</span>
+                    </div>
+                    <div className="appointment-info">
+                      <h4>James Dean</h4>
+                      <p>(555) 987-6543</p>
+                      <span className="appointment-status pending">Pending</span>
+                    </div>
+                    <div className="appointment-actions">
+                      <button className="action-btn">✅</button>
+                      <button className="action-btn">❌</button>
+                    </div>
+                  </div>
+
+                  <div className="appointment-item">
+                    <div className="appointment-avatar">
+                      <span>MM</span>
+                    </div>
+                    <div className="appointment-info">
+                      <h4>Marilyn Monroe</h4>
+                      <p>(555) 246-8013</p>
+                      <span className="appointment-status canceled">Canceled</span>
+                    </div>
+                    <div className="appointment-actions">
+                      <button className="action-btn">🔄</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="add-appointment">
+                <button className="add-appointment-btn">+</button>
+              </div>
+            </div>
           </div>
         )}
 

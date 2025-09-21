@@ -6,9 +6,9 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   min-height: 100vh;
-  color: #333;
+  color: #fff;
 }
 
 .container {
@@ -71,14 +71,15 @@ body {
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background: #f8fafc;
+  background: transparent;
 }
 
 /* Sidebar Styles */
 .sidebar {
   width: 250px;
-  background: white;
-  border-right: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -90,20 +91,20 @@ body {
 
 .sidebar-header {
   padding: 24px 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .app-title {
   font-size: 24px;
   font-weight: 700;
-  color: #1a202c;
+  color: #fff;
   margin: 0;
 }
 
 .app-subtitle {
   font-size: 12px;
-  color: #718096;
-  background: #edf2f7;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(102, 126, 234, 0.2);
   padding: 2px 8px;
   border-radius: 12px;
   margin-left: 8px;
@@ -122,7 +123,7 @@ body {
   padding: 12px 20px;
   border: none;
   background: none;
-  color: #4a5568;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -131,19 +132,19 @@ body {
 }
 
 .nav-item:hover {
-  background: #f7fafc;
-  color: #2d3748;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
 }
 
 .nav-item.active {
-  background: #3182ce;
-  color: white;
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
   border-radius: 8px;
   margin: 0 12px;
 }
 
 .nav-item.active:hover {
-  background: #2c5aa0;
+  background: rgba(102, 126, 234, 0.3);
 }
 
 .nav-icon {
@@ -152,15 +153,15 @@ body {
 
 .sidebar-footer {
   padding: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logout-btn {
   width: 100%;
   padding: 10px;
-  background: #e53e3e;
-  color: white;
-  border: none;
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  color: #ff4757;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -169,7 +170,7 @@ body {
 }
 
 .logout-btn:hover {
-  background: #c53030;
+  background: rgba(255, 71, 87, 0.2);
 }
 
 /* Main Content */
@@ -177,7 +178,7 @@ body {
   flex: 1;
   margin-left: 250px;
   padding: 24px;
-  background: #f8fafc;
+  background: transparent;
 }
 
 /* Page Header */
@@ -191,12 +192,12 @@ body {
 .page-header h1 {
   font-size: 32px;
   font-weight: 700;
-  color: #1a202c;
+  color: #fff;
   margin: 0;
 }
 
 .new-client-btn {
-  background: #3182ce;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   padding: 12px 20px;
@@ -204,11 +205,12 @@ body {
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: background 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .new-client-btn:hover {
-  background: #2c5aa0;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
 
 /* Search Container */
@@ -220,28 +222,31 @@ body {
   width: 100%;
   max-width: 400px;
   padding: 12px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   font-size: 14px;
-  background: white;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
   transition: border-color 0.2s ease;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #3182ce;
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .search-input::placeholder {
-  color: #a0aec0;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Clients Table */
 .clients-table-container {
-  background: white;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
@@ -251,7 +256,7 @@ body {
 }
 
 .clients-table thead {
-  background: #f7fafc;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .clients-table th {
@@ -259,21 +264,21 @@ body {
   text-align: left;
   font-size: 12px;
   font-weight: 600;
-  color: #4a5568;
+  color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .clients-table td {
   padding: 16px 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 14px;
-  color: #2d3748;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .clients-table tbody tr:hover {
-  background: #f7fafc;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .clients-table tbody tr:last-child td {
@@ -282,24 +287,24 @@ body {
 
 .client-name {
   font-weight: 600;
-  color: #1a202c;
+  color: #fff;
 }
 
 .client-email {
-  color: #4a5568;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .client-phone {
-  color: #4a5568;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .client-appointments {
   font-weight: 600;
-  color: #3182ce;
+  color: #667eea;
 }
 
 .client-last-appointment {
-  color: #718096;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* Stats Grid */
@@ -311,17 +316,18 @@ body {
 }
 
 .stat-card {
-  background: white;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card h3 {
   font-size: 14px;
   font-weight: 600;
-  color: #4a5568;
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -330,34 +336,35 @@ body {
 .stat-number {
   font-size: 32px;
   font-weight: 700;
-  color: #1a202c;
+  color: #fff;
   margin: 0;
 }
 
 /* User Info Card */
 .user-info-card {
-  background: white;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .user-info-card h3 {
   font-size: 18px;
   font-weight: 600;
-  color: #1a202c;
+  color: #fff;
   margin-bottom: 16px;
 }
 
 .user-info-card p {
   margin-bottom: 8px;
-  color: #4a5568;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
 }
 
 .user-info-card strong {
-  color: #1a202c;
+  color: #fff;
 }
 
 /* Modern Login Page Styles */
@@ -741,4 +748,352 @@ body {
   color: #2c3e50;
   display: inline-block;
   min-width: 140px;
+}
+
+/* Calendar Page Styles */
+.calendar-page {
+  color: #fff;
+}
+
+.calendar-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-view-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.calendar-view-btn.active {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.calendar-view-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.calendar-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.calendar-header {
+  margin-bottom: 24px;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.calendar-nav h2 {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.nav-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr 300px;
+  gap: 24px;
+  min-height: 500px;
+}
+
+.calendar-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.artist-profile {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.artist-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0 auto 12px;
+}
+
+.artist-profile h3 {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.artist-profile p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  margin: 0;
+}
+
+.calendar-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.appointment-slot {
+  min-height: 60px;
+  position: relative;
+}
+
+.appointment-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  border-left: 4px solid;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.appointment-card:hover {
+  transform: translateX(4px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.appointment-card.purple {
+  border-left-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.appointment-card.blue {
+  border-left-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.appointment-card.pink {
+  border-left-color: #ec4899;
+  background: rgba(236, 72, 153, 0.1);
+}
+
+.appointment-card.green {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.appointment-card.orange {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.appointment-card.red {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.appointment-time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.appointment-client {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.appointment-type {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.appointments-sidebar {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.appointments-sidebar h3 {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+}
+
+.appointment-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.appointment-item:last-child {
+  border-bottom: none;
+}
+
+.appointment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.appointment-info {
+  flex: 1;
+}
+
+.appointment-info h4 {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.appointment-info p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  margin: 0 0 4px 0;
+}
+
+.appointment-status {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.appointment-status.approved {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.appointment-status.pending {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.appointment-status.canceled {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.appointment-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.add-appointment {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 1000;
+}
+
+.add-appointment-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-appointment-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+}
+
+.add-appointment-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
 }
