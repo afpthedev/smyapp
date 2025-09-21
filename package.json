@@ -1,0 +1,15 @@
+{
+  "name": "smy-app",
+  "version": "1.0.0",
+  "description": "SMY App - Tattoo Studio Management",
+  "main": "index.js",
+  "scripts": {
+    "frontend:install": "cd frontend && npm install",
+    "frontend:start": "cd frontend && npm start",
+    "frontend:build": "cd frontend && npm run build",
+    "webapp:build": "cd frontend && npm run build",
+    "webapp:dev": "cd frontend && npm run dev",
+    "webapp:test": "echo 'No tests specified'"
+  },
+  "private": true
+}

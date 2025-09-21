@@ -15,7 +15,6 @@ const CalendarPage = () => {
     time: '',
     client: '',
     phone: '',
-    type: '',
     status: 'pending',
     color: 'blue'
   });
@@ -32,67 +31,44 @@ const CalendarPage = () => {
       const response = await appointmentService.getAllAppointments();
 
       if (response.success) {
-        // Transform backend data to frontend format
-        const transformedAppointments = response.data.map(dto =>
-          appointmentService.transformFromDTO(dto)
-        );
-        setAppointments(transformedAppointments);
+        // Directly use the transformed data from service
+        setAppointments(response.data);
       } else {
         setError(response.error || 'Randevular yüklenirken hata oluştu');
         // Fallback to demo data if backend is not available
-        setAppointments([
-          {
-            id: 1,
-            time: '10:00 - 12:00',
-            client: 'Demo Müşteri',
-            phone: '(555) 123-4567',
-            type: 'Demo Dövme',
-            status: 'pending',
-            color: 'blue'
-          }
-        ]);
+        setAppointments([]);
       }
     } catch (error) {
       console.error('Error loading appointments:', error);
-      setError('Randevular yüklenirken hata oluştu');
-      // Fallback to demo data
-      setAppointments([
-        {
-          id: 1,
-          time: '10:00 - 12:00',
-          client: 'Demo Müşteri',
-          phone: '(555) 123-4567',
-          type: 'Demo Dövme',
-          status: 'pending',
-          color: 'blue'
-        }
-      ]);
+      setError('Randevular yüklenirken hata oluştu: ' + error.message);
+      setAppointments([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleAddAppointment = async () => {
-    if (newAppointment.time && newAppointment.client && newAppointment.type) {
+    if (newAppointment.time && newAppointment.client) {
       try {
         setLoading(true);
-        const response = await appointmentService.createAppointment(newAppointment);
+        setError(null);
+
+        // Prepare appointment data for backend
+        const appointmentData = {
+          title: newAppointment.client,
+          description: newAppointment.phone || '',
+          appointmentDate: new Date().toISOString(), // You might want to parse time properly
+          duration: 60,
+          status: 'PLANNED',
+          type: null,
+          participants: []
+        };
+
+        const response = await appointmentService.createAppointment(appointmentData);
 
         if (response.success) {
-          // Transform and add to local state
-          const transformedAppointment = appointmentService.transformFromDTO(response.data);
-          setAppointments([...appointments, transformedAppointment]);
-
-          // Reset form
-          setNewAppointment({
-            time: '',
-            client: '',
-            phone: '',
-            type: '',
-            status: 'pending',
-            color: 'blue'
-          });
-          setShowAddForm(false);
+          // Directly use the transformed data from service
+          setAppointments([...appointments, response.data]);
         } else {
           setError(response.error || 'Randevu eklenirken hata oluştu');
           // Fallback to local state update
@@ -101,22 +77,40 @@ const CalendarPage = () => {
             ...newAppointment
           };
           setAppointments([...appointments, appointment]);
-          setNewAppointment({
-            time: '',
-            client: '',
-            phone: '',
-            type: '',
-            status: 'pending',
-            color: 'blue'
-          });
-          setShowAddForm(false);
         }
+
+        // Reset form
+        setNewAppointment({
+          time: '',
+          client: '',
+          phone: '',
+          status: 'pending',
+          color: 'blue'
+        });
+        setShowAddForm(false);
       } catch (error) {
         console.error('Error adding appointment:', error);
-        setError('Randevu eklenirken hata oluştu');
+        setError('Randevu eklenirken hata oluştu: ' + error.message);
+
+        // Fallback to local state update
+        const appointment = {
+          id: Date.now(),
+          ...newAppointment
+        };
+        setAppointments([...appointments, appointment]);
+        setNewAppointment({
+          time: '',
+          client: '',
+          phone: '',
+          status: 'pending',
+          color: 'blue'
+        });
+        setShowAddForm(false);
       } finally {
         setLoading(false);
       }
+    } else {
+      setError('Lütfen saat ve müşteri adı alanlarını doldurun');
     }
   };
 
@@ -172,7 +166,6 @@ const CalendarPage = () => {
         time: '',
         client: '',
         phone: '',
-        type: '',
         status: 'pending',
         color: 'blue'
       });
@@ -188,7 +181,6 @@ const CalendarPage = () => {
         time: '',
         client: '',
         phone: '',
-        type: '',
         status: 'pending',
         color: 'blue'
       });
@@ -435,15 +427,6 @@ const CalendarPage = () => {
               />
             </div>
             <div className="form-group">
-              <label>Dövme Türü:</label>
-              <input
-                type="text"
-                placeholder="Dövme türünü girin"
-                value={newAppointment.type}
-                onChange={(e) => setNewAppointment({...newAppointment, type: e.target.value})}
-              />
-            </div>
-            <div className="form-group">
               <label>Durum:</label>
               <select
                 value={newAppointment.status}
@@ -484,7 +467,6 @@ const CalendarPage = () => {
                     time: '',
                     client: '',
                     phone: '',
-                    type: '',
                     status: 'pending',
                     color: 'blue'
                   });

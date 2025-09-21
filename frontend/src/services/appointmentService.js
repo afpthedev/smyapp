@@ -77,10 +77,24 @@ class AppointmentService {
   async getAllAppointments() {
     try {
       const response = await apiService.get('/appointments');
-      return response.map(dto => this.transformFromDTO(dto));
+
+      if (response.success) {
+        return {
+          success: true,
+          data: response.data.map(dto => this.transformFromDTO(dto))
+        };
+      } else {
+        return {
+          success: false,
+          error: response.error || 'Randevular getirilemedi'
+        };
+      }
     } catch (error) {
       console.error('Randevular getirilirken hata:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.message || 'Randevular getirilemedi'
+      };
     }
   }
 
@@ -100,10 +114,24 @@ class AppointmentService {
     try {
       const dto = this.transformToDTO(appointment);
       const response = await apiService.post('/appointments', dto);
-      return this.transformFromDTO(response);
+
+      if (response.success) {
+        return {
+          success: true,
+          data: this.transformFromDTO(response.data)
+        };
+      } else {
+        return {
+          success: false,
+          error: response.error || 'Randevu oluşturulamadı'
+        };
+      }
     } catch (error) {
       console.error('Randevu oluşturulurken hata:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.message || 'Randevu oluşturulamadı'
+      };
     }
   }
 
