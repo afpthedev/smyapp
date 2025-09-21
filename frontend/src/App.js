@@ -7,7 +7,7 @@ import authService from './services/authService';
 // Protected Route bileşeni
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = authService.isAuthenticated();
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  return isAuthenticated ? children : <Navigate to="/api/admin/login" replace />;
 };
 
 function App() {
@@ -15,24 +15,21 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          {/* Ana sayfa yönlendirmesi */}
-          <Route path="/" element={<Navigate to="/admin/login" replace />} />
+          {/* Ana sayfa - login'e yönlendir */}
+          <Route path="/" element={<Navigate to="/api/admin/login" replace />} />
           
           {/* Login sayfası */}
-          <Route path="/admin/login" element={<Login />} />
+          <Route path="/api/admin/login" element={<Login />} />
           
-          {/* Korumalı Dashboard sayfası */}
-          <Route 
-            path="/admin/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
+          {/* Korumalı admin rotaları */}
+          <Route path="/admin/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
           
-          {/* Diğer tüm rotalar login'e yönlendirilir */}
-          <Route path="*" element={<Navigate to="/admin/login" replace />} />
+          {/* Diğer rotalar için login'e yönlendir */}
+          <Route path="*" element={<Navigate to="/api/admin/login" replace />} />
         </Routes>
       </div>
     </Router>

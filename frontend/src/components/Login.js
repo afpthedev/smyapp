@@ -46,71 +46,77 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h1 className="login-title">Admin Girişi</h1>
+    <div className="login-page">
+      <div className="login-container">
+        <div className="login-header">
+          <div className="logo">
+            <div className="logo-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                <path d="M8 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <span className="logo-text">InkFlow</span>
+          </div>
+        </div>
         
-        {error && (
-          <div style={{
-            background: '#ff4757',
-            color: 'white',
-            padding: '12px',
-            borderRadius: '8px',
-            marginBottom: '20px',
-            textAlign: 'center'
-          }}>
-            {error}
+        <div className="login-form-container">
+          <div className="welcome-section">
+            <h1>Welcome back</h1>
+            <p>Sign in to manage your studio</p>
           </div>
-        )}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Kullanıcı Adı</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={credentials.username}
-              onChange={handleInputChange}
-              placeholder="Kullanıcı adınızı giriniz"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="password">Şifre</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={credentials.password}
-              onChange={handleInputChange}
-              placeholder="Şifrenizi giriniz"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="form-group">
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
               <input
-                type="checkbox"
-                name="rememberMe"
-                checked={credentials.rememberMe}
+                type="text"
+                name="username"
+                value={credentials.username}
                 onChange={handleInputChange}
+                placeholder="Username"
+                required
                 disabled={isLoading}
+                className="form-input"
               />
-              Beni Hatırla
-            </label>
+            </div>
+            
+            <div className="form-group">
+              <input
+                type="password"
+                name="password"
+                value={credentials.password}
+                onChange={handleInputChange}
+                placeholder="Password"
+                required
+                disabled={isLoading}
+                className="form-input"
+              />
+            </div>
+            
+            <div className="forgot-password">
+              <a href="#" className="forgot-link">Forgot your password?</a>
+            </div>
+            
+            <button 
+              type="submit" 
+              className="login-button"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing in...' : 'Login'}
+            </button>
+          </form>
+          
+          <div className="signup-section">
+            <span>Don't have an account? </span>
+            <a href="#" className="signup-link">Sign up</a>
           </div>
-          <button 
-            type="submit" 
-            className="btn"
-            disabled={isLoading}
-            style={{ width: '100%' }}
-          >
-            {isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );

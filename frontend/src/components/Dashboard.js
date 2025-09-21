@@ -15,11 +15,11 @@ const Dashboard = () => {
           setUser(userData);
         } else {
           // Kullanıcı bilgisi alınamazsa login'e yönlendir
-          navigate('/login');
+          navigate('/api/admin/login');
         }
       } catch (error) {
         console.error('User data loading error:', error);
-        navigate('/login');
+        navigate('/api/admin/login');
       } finally {
         setIsLoading(false);
       }
@@ -31,11 +31,11 @@ const Dashboard = () => {
   const handleLogout = async () => {
     try {
       await authService.logout();
-      navigate('/login');
+      navigate('/api/admin/login');
     } catch (error) {
       console.error('Logout error:', error);
       // Hata olsa bile logout yap
-      navigate('/login');
+      navigate('/api/admin/login');
     }
   };
 
