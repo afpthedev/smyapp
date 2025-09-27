@@ -26,6 +26,12 @@
   gap: clamp(28px, 5vw, 40px);
 }
 
+.profile-loading {
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+}
+
 .profile-toolbar {
   width: min(960px, 100%);
   display: flex;

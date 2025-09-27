@@ -157,6 +157,15 @@
   color: rgba(37, 99, 235, 0.75);
 }
 
+.reservations-timeline-title {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.reservations-timeline-description {
+  color: rgba(71, 85, 105, 0.75);
+}
+
 .reservations-timeline h5.ant-typography {
   margin: 0;
 }

@@ -118,6 +118,32 @@
   background: rgba(244, 63, 94, 0.18) !important;
 }
 
+.tag-warning {
+  color: #92400e !important;
+  background: rgba(251, 191, 36, 0.22) !important;
+}
+
+.tag-neutral {
+  color: rgba(15, 23, 42, 0.7) !important;
+  background: rgba(148, 163, 184, 0.18) !important;
+}
+
+.dashboard-loading {
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+}
+
+.dashboard-error {
+  padding: 16px 24px;
+  border-radius: 16px;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  margin-bottom: 16px;
+}
+
 .stat-helper {
   color: rgba(71, 85, 105, 0.75);
 }
@@ -206,9 +232,9 @@
 .reservation-status {
   border-radius: 999px;
   border: none;
-  background: rgba(37, 99, 235, 0.12);
-  color: var(--color-primary);
   font-weight: 600;
+  padding-inline: 14px;
+  text-transform: capitalize;
 }
 
 .dashboard-occupancy {

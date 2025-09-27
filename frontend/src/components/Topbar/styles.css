@@ -240,6 +240,14 @@
   color: transparent;
 }
 
+.notification-empty {
+  display: grid;
+  place-items: center;
+  padding: 24px 0;
+  color: rgba(15, 23, 42, 0.65);
+  font-weight: 500;
+}
+
 @media (max-width: 960px) {
   .dashboard-topbar {
     flex-direction: column;

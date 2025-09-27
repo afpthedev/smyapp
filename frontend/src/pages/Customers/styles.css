@@ -58,9 +58,6 @@
 .customers-interests .ant-tag {
   border-radius: 999px;
   padding: 0 12px;
-  background: rgba(99, 102, 241, 0.08);
-  border: none;
-  color: rgba(79, 70, 229, 0.85);
   font-weight: 600;
 }
 
@@ -69,6 +66,18 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 6px;
+}
+
+.customers-meta-label {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(71, 85, 105, 0.65);
+}
+
+.customers-meta-value {
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.85);
 }
 
 .customers-tier.ant-tag {
@@ -87,37 +96,10 @@
   color: rgba(71, 85, 105, 0.75);
 }
 
-.customers-segment-overview {
+.customers-segments {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-.customers-sentiment {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.customers-sentiment .ant-progress {
-  transform: scale(0.9);
-}
-
-.customers-sentiment-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-width: 220px;
-}
-
-.customers-sentiment-copy h4.ant-typography {
-  margin: 0;
-}
-
-.customers-segment-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 
 .customers-segment-item {
@@ -151,16 +133,16 @@
   gap: 16px;
 }
 
-.customers-follow-up-list {
+.customers-follow-ups-header {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .customers-follow-up-item {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
   padding: 14px;
   border-radius: 16px;
   background: linear-gradient(140deg, rgba(37, 99, 235, 0.06), rgba(56, 189, 248, 0.08));
@@ -169,6 +151,21 @@
 
 .customers-follow-up-item h5.ant-typography {
   margin: 0;
+}
+
+.customers-follow-up-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.customers-follow-up-title {
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.9);
+}
+
+.customers-follow-up-owner {
+  color: rgba(71, 85, 105, 0.75);
 }
 
 .customers-follow-up-meta {
@@ -225,8 +222,7 @@
     align-items: flex-start;
   }
 
-  .customers-sentiment {
-    flex-direction: column;
+  .customers-meta {
     align-items: flex-start;
   }
 }

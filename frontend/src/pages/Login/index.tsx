@@ -27,13 +27,11 @@ const Login: React.FC = () => {
       await form.validateFields();
 
       // Backend bağlantısı
-      const response = await authService.login(values.username, values.password);
+      const token = await authService.login(values.username, values.password, values.remember);
 
-      if (response.data) {
-        // Başarılı giriş
-        localStorage.setItem('token', response.data.token);
+      if (token) {
+        localStorage.setItem('token', token);
         message.success('Giriş başarılı!');
-        // Ana sayfaya yönlendirme
         window.location.href = '/dashboard';
       }
     } catch (error: unknown) {
