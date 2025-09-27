@@ -1,0 +1,18 @@
+{
+  "generator-jhipster": {
+    "applicationType": "monolith",
+    "authenticationType": "jwt",
+    "baseName": "ReservationApp",
+    "buildTool": "maven",
+    "clientFramework": "react",
+    "enableTranslation": true,
+    "entities": ["Business", "Service", "Customer", "Reservation", "Payment"],
+    "jhipsterVersion": "8.11.0",
+    "jwtSecretKey": "YjdkN2IwZWIwYjQ2MzZjMTliMTgwZDA2OTk0YTFlYmM3OGFlMTc5YzY1MWIzYjk1YTBkNDEzZjEwNjYwMjQ5ZjM1YzQxYmM3MjA4YTBjN2FjNmI5MjhmYWUzZWE2MzBmYTY2ZDNjMjcyMWI1Y2M3OTc5YTM1ZDdlZjA3ZWM4OTc=",
+    "languages": ["en", "tr"],
+    "lastLiquibaseTimestamp": 1758947849000,
+    "nativeLanguage": "en",
+    "packageName": "com.mycompany.reservation",
+    "prodDatabaseType": "postgresql"
+  }
+}

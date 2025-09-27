@@ -1,0 +1,70 @@
+{
+  "annotations": {
+    "changelogDate": "20250927043329"
+  },
+  "applications": ["ReservationApp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "BusinessType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "RESTAURANT,CAFE,GYM,DOCTOR,HAIRDRESSER,EVENT,OTHER"
+    },
+    {
+      "fieldName": "address",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "phone",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "email",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    }
+  ],
+  "name": "Business",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "service",
+      "otherEntityRelationshipName": "business",
+      "relationshipName": "services",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "reservation",
+      "otherEntityRelationshipName": "business",
+      "relationshipName": "reservations",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "payment",
+      "otherEntityRelationshipName": "business",
+      "relationshipName": "payments",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "customer",
+      "otherEntityRelationshipName": "business",
+      "relationshipName": "customers",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

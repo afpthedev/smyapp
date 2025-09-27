@@ -1,51 +1,104 @@
-entity Appointment {
-  title String required maxlength(100),
-  description TextBlob,
-  appointmentDate ZonedDateTime required,
-  duration Integer required min(1) max(1440),
-  status AppointmentStatus required,
-  createdDate Instant,
-  lastModifiedDate Instant
+application {
+  config {
+    baseName ReservationApp
+    applicationType monolith
+    packageName com.mycompany.reservation
+    authenticationType jwt
+    prodDatabaseType postgresql
+    buildTool maven
+    clientFramework react
+    enableTranslation true
+    nativeLanguage en
+    languages [en, tr]
+  }
+  entities *
 }
 
-enum AppointmentStatus {
-  PLANNED, CONFIRMED, CANCELLED, COMPLETED
+entity Business {
+  name String required,
+  type BusinessType required,
+  address String,
+  phone String,
+  email String,
+  description String
 }
 
-entity AppointmentType {
-  name String required maxlength(50),
-  description String maxlength(200),
-  color String pattern(/^#[0-9A-Fa-f]{6}$/),
-  isActive Boolean required
+enum BusinessType {
+  RESTAURANT,
+  CAFE,
+  GYM,
+  DOCTOR,
+  HAIRDRESSER,
+  EVENT,
+  OTHER
 }
 
-entity Notification {
-  type NotificationType required,
-  message String required maxlength(500),
-  sentDate Instant,
-  isRead Boolean required,
-  recipientEmail String,
-  recipientPhone String
+entity Service {
+  name String required,
+  description String,
+  duration Integer,
+  price BigDecimal
 }
 
-enum NotificationType {
-  EMAIL, SMS, SYSTEM
+entity Customer {
+  firstName String required,
+  lastName String required,
+  email String required,
+  phone String required,
+  notes String   // müşteri hakkında özel not (örn. VIP, alerji bilgisi)
 }
 
-// İlişkiler
+entity Reservation {
+  date ZonedDateTime required,
+  status ReservationStatus required,
+  notes String
+}
+
+enum ReservationStatus {
+  PENDING,
+  CONFIRMED,
+  CANCELLED,
+  COMPLETED
+}
+
+entity Payment {
+  amount BigDecimal required,
+  method PaymentMethod required,
+  status PaymentStatus required,
+  transactionId String
+}
+
+enum PaymentMethod {
+  CREDIT_CARD,
+  DEBIT_CARD,
+  CASH,
+  APPLE_PAY,
+  GOOGLE_PAY,
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING,
+  PAID,
+  FAILED,
+  REFUNDED
+}
+
+relationship OneToMany {
+  Business{services} to Service{business}
+  Business{reservations} to Reservation{business}
+  Business{payments} to Payment{business}
+  Business{customers} to Customer{business}
+}
+
 relationship ManyToOne {
-  Appointment{createdBy(login)} to User with builtInEntity,
-  Appointment{type(name)} to AppointmentType,
-  Notification{appointment(title)} to Appointment,
-  Notification{recipient(login)} to User with builtInEntity
+  Reservation{service} to Service
+  Reservation{customer} to Customer
+  Payment{reservation} to Reservation
+  Payment{customer} to Customer
 }
 
-relationship ManyToMany {
-  Appointment{participants(login)} to User with builtInEntity
-}
-
-// Konfigürasyonlar
-paginate Appointment, AppointmentType, Notification with pagination
-service all with serviceImpl
-dto all with mapstruct
-filter Appointment, AppointmentType
+dto * with mapstruct
+service all with serviceClass
+paginate Reservation, Business, Customer with pagination
+paginate Service with infinite-scroll
