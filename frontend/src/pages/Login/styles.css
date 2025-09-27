@@ -1,148 +1,147 @@
 .login-container {
+  position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  padding: 64px 24px 48px;
+}
+
+.login-container::before,
+.login-container::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(45px);
+  opacity: 0.55;
+  z-index: 0;
+}
+
+.login-container::before {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle at center, rgba(37, 99, 235, 0.38), transparent 65%);
+  top: 10%;
+  left: clamp(-120px, 10vw, -60px);
+}
+
+.login-container::after {
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle at center, rgba(56, 189, 248, 0.28), transparent 60%);
+  bottom: 10%;
+  right: clamp(-140px, 12vw, -40px);
 }
 
 .login-card {
-  width: 400px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: white;
-  animation: fadeIn 0.8s ease-in-out;
-  transform-origin: center;
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
 }
 
-.login-card {
-  backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.9);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.login-card .ant-card-body {
+  padding: 40px 36px 44px;
+  display: flex;
+  flex-direction: column;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 28px;
-  padding-top: 10px;
+  margin-bottom: 32px;
 }
 
 .login-header h2 {
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #333;
-  animation: slideDown 0.6s ease-out;
+  margin-bottom: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.login-header .ant-typography {
+  color: var(--color-muted);
+  font-size: 15px;
+}
+
+.login-error {
+  margin-bottom: 24px !important;
 }
 
 .login-form {
-  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ant-form-item {
+  margin-bottom: 12px;
 }
 
 .login-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  margin-top: -4px;
+  flex-wrap: wrap;
 }
 
 .login-form-forgot {
-  float: right;
-  color: #1890ff;
-  transition: color 0.3s;
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .login-form-forgot:hover {
-  color: #40a9ff;
   text-decoration: underline;
 }
 
 .login-form-button {
-  height: 44px;
+  height: 48px;
   font-size: 16px;
-  margin-top: 20px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #1890ff, #40a9ff);
-  border: none;
-  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
-  transition: all 0.3s ease;
+  border-radius: 14px;
 }
 
-.login-form-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
-  background: linear-gradient(90deg, #40a9ff, #1890ff);
+.login-form-button .ant-btn-loading-icon {
+  transform: translateY(-1px);
 }
 
-.login-form-button:active {
-  transform: translateY(1px);
+.login-footer {
+  margin-top: 28px;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 14px;
 }
 
-/* Form alanları için özel stiller */
-.ant-input-affix-wrapper {
-  border-radius: 6px;
-  border: 1px solid #e8e8e8;
-  transition: all 0.3s;
-  height: 44px;
-  margin-bottom: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+.login-footer strong {
+  color: #0f172a;
 }
 
-.ant-input-affix-wrapper:hover,
-.ant-input-affix-wrapper:focus {
-  border-color: #40a9ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-}
-
-.ant-form-item {
-  margin-bottom: 20px;
-  opacity: 0;
-  animation: fadeInUp 0.5s ease forwards;
-}
-
-.ant-form-item:nth-child(1) {
-  animation-delay: 0.2s;
-}
-
-.ant-form-item:nth-child(2) {
-  animation-delay: 0.4s;
-}
-
-.ant-form-item:nth-child(3) {
-  animation-delay: 0.6s;
-}
-
-.ant-form-item:nth-child(4) {
-  animation-delay: 0.8s;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+@media (max-width: 640px) {
+  .login-container {
+    padding-top: 48px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .login-card {
+    width: min(100%, 360px);
+  }
+
+  .login-card .ant-card-body {
+    padding: 32px 24px 36px;
+  }
+
+  .login-header h2 {
+    font-size: 24px;
+  }
+
+  .login-header .ant-typography {
+    font-size: 14px;
+  }
+
+  .login-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .login-form-forgot {
+    align-self: flex-start;
   }
 }
