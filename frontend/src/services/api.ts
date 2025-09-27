@@ -42,7 +42,7 @@ api.interceptors.response.use(
 // Auth servisleri
 export const authService = {
   login: (username: string, password: string) => {
-    return api.post('/auth/login', {username, password});
+    return api.post('/authenticate', {username, password});
   },
   logout: () => {
     localStorage.removeItem('token');
