@@ -4,6 +4,7 @@ import com.mycompany.reservation.domain.enumeration.ReservationStatus;
 import com.mycompany.reservation.repository.ReservationRepository;
 import com.mycompany.reservation.security.AuthoritiesConstants;
 import com.mycompany.reservation.service.ReservationService;
+import com.mycompany.reservation.service.dto.ReservationApprovalDTO;
 import com.mycompany.reservation.service.dto.ReservationDTO;
 import com.mycompany.reservation.service.dto.ReservationFilterCriteria;
 import com.mycompany.reservation.service.dto.ReservationReportDTO;
@@ -231,5 +232,22 @@ public class ReservationResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @PostMapping("/{id}/approve")
+    @PreAuthorize("hasAuthority('" + AuthoritiesConstants.ADMIN + "')")
+    public ResponseEntity<ReservationDTO> approveReservation(
+        @PathVariable("id") Long id,
+        @RequestBody(required = false) ReservationApprovalDTO approvalDTO
+    ) {
+        LOG.debug("REST request to approve Reservation : {}", id);
+        try {
+            ReservationDTO reservationDTO = reservationService.approve(id, approvalDTO != null ? approvalDTO.getNotes() : null);
+            return ResponseEntity.ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, reservationDTO.getId().toString()))
+                .body(reservationDTO);
+        } catch (IllegalStateException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invalidstatus");
+        }
     }
 }

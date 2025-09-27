@@ -21,10 +21,13 @@ import {
 import { CalendarOutlined, ClockCircleOutlined, LineChartOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 import Topbar from '../../components/Topbar';
 import '../../styles/workspace.css';
 import './styles.css';
 import { reservationService, type Reservation, type ReservationStatus } from '../../services/api';
+
+dayjs.extend(isBetween);
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -61,6 +64,10 @@ const Reservations: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('today');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [approveModalOpen, setApproveModalOpen] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [approvalNotes, setApprovalNotes] = useState('');
   const [form] = Form.useForm<{ date: Dayjs; status: ReservationStatus; notes?: string }>();
 
   const loadReservations = useCallback(async () => {
@@ -96,6 +103,37 @@ const Reservations: React.FC = () => {
       message.error('Rezervasyon oluşturulurken bir hata meydana geldi.');
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  const handleOpenApproveModal = (reservation: Reservation) => {
+    setSelectedReservation(reservation);
+    setApprovalNotes(reservation.notes ?? '');
+    setApproveModalOpen(true);
+  };
+
+  const handleCloseApproveModal = () => {
+    setApproveModalOpen(false);
+    setSelectedReservation(null);
+    setApprovalNotes('');
+  };
+
+  const handleApproveReservation = async () => {
+    if (!selectedReservation) {
+      return;
+    }
+    try {
+      setApproveLoading(true);
+      await reservationService.approve(selectedReservation.id, {
+        notes: approvalNotes.trim() ? approvalNotes.trim() : undefined,
+      });
+      message.success('Rezervasyon başarıyla onaylandı.');
+      handleCloseApproveModal();
+      await loadReservations();
+    } catch {
+      message.error('Rezervasyon onaylanırken bir hata meydana geldi.');
+    } finally {
+      setApproveLoading(false);
     }
   };
 
@@ -334,6 +372,11 @@ const Reservations: React.FC = () => {
                           <Tag color={statusColors[item.status]} className="reservations-status">
                             {statusLabels[item.status]}
                           </Tag>
+                          {item.status === 'PENDING' && (
+                            <Button type="primary" size="small" onClick={() => handleOpenApproveModal(item)}>
+                              Onayla
+                            </Button>
+                          )}
                         </div>
                       </List.Item>
                     );
@@ -392,6 +435,42 @@ const Reservations: React.FC = () => {
             <Input.TextArea rows={3} placeholder="Opsiyonel açıklama ekleyebilirsiniz." />
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title="Rezervasyonu Onayla"
+        open={approveModalOpen}
+        onCancel={handleCloseApproveModal}
+        onOk={handleApproveReservation}
+        confirmLoading={approveLoading}
+        okText="Onayla"
+        cancelText="Vazgeç"
+        okButtonProps={{ disabled: !selectedReservation }}
+      >
+        {selectedReservation ? (
+          <Space direction="vertical" size={16} style={{ width: '100%' }}>
+            <div className="reservations-approve-details">
+              <Text strong>
+                {[selectedReservation.customer?.firstName, selectedReservation.customer?.lastName].filter(Boolean).join(' ') || 'Müşteri'}
+              </Text>
+              <Text type="secondary">{selectedReservation.service?.name ?? 'Hizmet bilgisi yok'}</Text>
+              <Text className="reservations-approve-time">{dayjs(selectedReservation.date).format('DD MMM YYYY · HH:mm')}</Text>
+            </div>
+            <Form layout="vertical">
+              <Form.Item label="Yönetici Notu">
+                <Input.TextArea
+                  rows={3}
+                  value={approvalNotes}
+                  onChange={event => setApprovalNotes(event.target.value)}
+                  placeholder="Onayla beraber iletmek istediğiniz notu ekleyebilirsiniz."
+                />
+              </Form.Item>
+            </Form>
+          </Space>
+        ) : (
+          <div className="reservations-approve-loading">
+            <Spin />
+          </div>
+        )}
       </Modal>
     </>
   );

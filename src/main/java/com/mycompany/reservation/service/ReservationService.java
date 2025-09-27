@@ -98,6 +98,24 @@ public class ReservationService {
         return reservationMapper.toDto(reservation);
     }
 
+    @CacheEvict(cacheNames = CUSTOMER_RESERVATION_SUMMARY_CACHE, allEntries = true)
+    public ReservationDTO approve(Long reservationId, String notes) {
+        LOG.debug("Request to approve Reservation : {}", reservationId);
+        Reservation reservation = reservationRepository
+            .findById(reservationId)
+            .orElseThrow(() -> new EntityNotFoundException("Reservation not found"));
+        assertCanAccessReservation(reservation);
+        if (reservation.getStatus() != ReservationStatus.PENDING) {
+            throw new IllegalStateException("Sadece bekleyen rezervasyonlar onaylanabilir");
+        }
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        if (notes != null) {
+            reservation.setNotes(notes.isBlank() ? null : notes);
+        }
+        reservation = reservationRepository.save(reservation);
+        return reservationMapper.toDto(reservation);
+    }
+
     /**
      * Partially update a reservation.
      *

@@ -106,19 +106,21 @@ const Topbar: React.FC = () => {
 
   const notificationCount = notifications.length;
 
-  const brandName = business?.name ?? 'Rezervasyon Yönetimi';
+  const defaultBrandName = 'Caplio.ai';
+  const brandName = business?.name?.trim() || defaultBrandName;
   const brandInitials = useMemo(() => {
-    return brandName
+    const normalized = brandName.replace(/[.]/g, ' ');
+    return normalized
       .split(' ')
       .filter(Boolean)
       .slice(0, 2)
       .map(part => part.charAt(0).toUpperCase())
       .join('')
-      .padEnd(2, 'R')
+      .padEnd(2, 'A')
       .slice(0, 2);
   }, [brandName]);
 
-  const brandSubtitle = business?.type ? business.type.toLowerCase().replace(/_/g, ' ') : 'Yönetim Merkezi';
+  const brandSubtitle = business?.type ? business.type.toLowerCase().replace(/_/g, ' ') : 'Operasyon Merkezi';
 
   const handleProfileMenuClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'profile' || key === 'security') {
