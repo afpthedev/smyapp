@@ -11,19 +11,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycompany.reservation.IntegrationTest;
 import com.mycompany.reservation.domain.Reservation;
+import com.mycompany.reservation.domain.User;
 import com.mycompany.reservation.domain.enumeration.ReservationStatus;
 import com.mycompany.reservation.repository.ReservationRepository;
+import com.mycompany.reservation.repository.UserRepository;
+import com.mycompany.reservation.security.AuthoritiesConstants;
 import com.mycompany.reservation.service.dto.ReservationDTO;
 import com.mycompany.reservation.service.mapper.ReservationMapper;
 import jakarta.persistence.EntityManager;
-
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @IntegrationTest
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 class ReservationResourceIT {
 
     private static final ZonedDateTime DEFAULT_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
@@ -64,6 +65,9 @@ class ReservationResourceIT {
     private ReservationRepository reservationRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ReservationMapper reservationMapper;
 
     @Autowired
@@ -76,14 +80,20 @@ class ReservationResourceIT {
 
     private Reservation insertedReservation;
 
+    private User testUser;
+
     /**
      * Create an entity for this test.
      * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
+    public static Reservation createEntity(User user) {
+        return new Reservation().date(DEFAULT_DATE).status(DEFAULT_STATUS).notes(DEFAULT_NOTES).user(user);
+    }
+
     public static Reservation createEntity() {
-        return new Reservation().date(DEFAULT_DATE).status(DEFAULT_STATUS).notes(DEFAULT_NOTES);
+        return createEntity(null);
     }
 
     /**
@@ -92,13 +102,27 @@ class ReservationResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
+    public static Reservation createUpdatedEntity(User user) {
+        return new Reservation().date(UPDATED_DATE).status(UPDATED_STATUS).notes(UPDATED_NOTES).user(user);
+    }
+
     public static Reservation createUpdatedEntity() {
-        return new Reservation().date(UPDATED_DATE).status(UPDATED_STATUS).notes(UPDATED_NOTES);
+        return createUpdatedEntity(null);
     }
 
     @BeforeEach
     void initTest() {
-        reservation = createEntity();
+        testUser = userRepository
+            .findOneByLogin("user")
+            .orElseGet(() -> {
+                User user = new User();
+                user.setLogin("user");
+                user.setPassword("1".repeat(60));
+                user.setActivated(true);
+                user.setEmail("user@example.com");
+                return userRepository.saveAndFlush(user);
+            });
+        reservation = createEntity(testUser);
     }
 
     @AfterEach
@@ -199,7 +223,8 @@ class ReservationResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(reservation.getId().intValue())))
             .andExpect(jsonPath("$.[*].date").value(hasItem(sameInstant(DEFAULT_DATE))))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
-            .andExpect(jsonPath("$.[*].notes").value(hasItem(DEFAULT_NOTES)));
+            .andExpect(jsonPath("$.[*].notes").value(hasItem(DEFAULT_NOTES)))
+            .andExpect(jsonPath("$.[*].userId").value(hasItem(testUser.getId().intValue())));
     }
 
     @Test
@@ -216,7 +241,8 @@ class ReservationResourceIT {
             .andExpect(jsonPath("$.id").value(reservation.getId().intValue()))
             .andExpect(jsonPath("$.date").value(sameInstant(DEFAULT_DATE)))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
-            .andExpect(jsonPath("$.notes").value(DEFAULT_NOTES));
+            .andExpect(jsonPath("$.notes").value(DEFAULT_NOTES))
+            .andExpect(jsonPath("$.userId").value(testUser.getId().intValue()));
     }
 
     @Test

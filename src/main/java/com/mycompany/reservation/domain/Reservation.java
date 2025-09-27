@@ -1,13 +1,12 @@
 package com.mycompany.reservation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.mycompany.reservation.domain.User;
 import com.mycompany.reservation.domain.enumeration.ReservationStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -41,16 +40,20 @@ public class Reservation implements Serializable {
     private String notes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = {"business"}, allowSetters = true)
+    @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
     private OfferedService service;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = {"business"}, allowSetters = true)
+    @JsonIgnoreProperties(value = { "business" }, allowSetters = true)
     private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = {"services", "reservations", "payments", "customers"}, allowSetters = true)
+    @JsonIgnoreProperties(value = { "services", "reservations", "payments", "customers" }, allowSetters = true)
     private Business business;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
+    private User user;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -145,6 +148,19 @@ public class Reservation implements Serializable {
         return this;
     }
 
+    public User getUser() {
+        return this.user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Reservation user(User user) {
+        this.setUser(user);
+        return this;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -172,6 +188,7 @@ public class Reservation implements Serializable {
             ", date='" + getDate() + "'" +
             ", status='" + getStatus() + "'" +
             ", notes='" + getNotes() + "'" +
+            ", user=" + (getUser() != null ? getUser().getId() : null) +
             "}";
     }
 }
