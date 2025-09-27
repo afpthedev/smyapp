@@ -100,9 +100,7 @@ const Login: React.FC = () => {
             name="password"
             rules={[
               {required: true, message: 'Lütfen şifrenizi girin!'},
-              {min: 6, message: 'Şifre en az 6 karakter olmalıdır!'},
               {
-                pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/,
                 message: 'Şifre en az bir harf ve bir rakam içermelidir!'
               }
             ]}
