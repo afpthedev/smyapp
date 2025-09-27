@@ -1,44 +1,69 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.ant-card {
+  border-radius: 20px;
+  border: none;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.92), rgba(247, 250, 255, 0.85));
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(24px);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.ant-typography {
+  color: #0f172a;
 }
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.ant-btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
 
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.ant-btn-primary:not(.ant-btn-disabled):hover,
+.ant-btn-primary:not(.ant-btn-disabled):focus {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 40px -25px rgba(37, 99, 235, 0.7);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.ant-btn-primary:active {
+  transform: translateY(1px);
+}
+
+.ant-input-affix-wrapper,
+.ant-input {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 10px 14px;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.ant-input-affix-wrapper-focused,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper:hover,
+.ant-input:focus,
+.ant-input:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  background-color: #ffffff;
+}
+
+.ant-checkbox-wrapper {
+  color: var(--color-muted);
+}
+
+.ant-alert {
+  border-radius: 12px;
+}
+
+@media (max-width: 640px) {
+  .ant-card {
+    border-radius: 16px;
   }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }
