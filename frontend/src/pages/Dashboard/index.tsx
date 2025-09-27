@@ -1,180 +1,155 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Avatar, Card, DatePicker, Empty, List, Progress, Select, Space, Spin, Tag, Typography } from 'antd';
-import { CalendarOutlined, DollarCircleOutlined, TeamOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
+import { Avatar, Card, DatePicker, Empty, List, Progress, Select, Skeleton, Space, Tag, Typography } from 'antd';
+import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, DollarCircleOutlined, TeamOutlined } from '@ant-design/icons';
+import dayjs, { Dayjs } from 'dayjs';
 import Topbar from '../../components/Topbar';
-import {
-  customerService,
-  paymentService,
-  reservationService,
-  type Customer,
-  type Payment,
-  type Reservation,
-  type ReservationStatus,
-} from '../../services/api';
+import { reservationApi } from '../../services/api';
 import './styles.css';
+
+type ReservationReport = {
+  totalReservations: number;
+  distinctCustomers: number;
+  distinctBusinesses: number;
+  upcomingReservations: number;
+  statusCounts: Record<string, number>;
+};
+
+type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+
+type ReservationListItem = {
+  id: number;
+  date: string;
+  status: ReservationStatus;
+  notes?: string;
+};
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
-const statusColors: Record<ReservationStatus, string> = {
-  PENDING: 'processing',
-  CONFIRMED: 'success',
-  CANCELLED: 'error',
-  COMPLETED: 'default',
-};
-
 const statusLabels: Record<ReservationStatus, string> = {
-  PENDING: 'Onay bekliyor',
+  PENDING: 'Beklemede',
   CONFIRMED: 'Onaylandı',
-  CANCELLED: 'İptal edildi',
+  CANCELLED: 'İptal',
   COMPLETED: 'Tamamlandı',
 };
 
-const currencyFormatter = new Intl.NumberFormat('tr-TR', {
-  style: 'currency',
-  currency: 'TRY',
-  maximumFractionDigits: 0,
-});
-
 const Dashboard: React.FC = () => {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'custom'>('today');
+  const [range, setRange] = useState<[Dayjs, Dayjs]>([dayjs().startOf('day'), dayjs().endOf('day')]);
+  const [report, setReport] = useState<ReservationReport | null>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [upcomingReservations, setUpcomingReservations] = useState<ReservationListItem[]>([]);
+  const [loadingUpcoming, setLoadingUpcoming] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
+    if (period === 'today') {
+      setRange([dayjs().startOf('day'), dayjs().endOf('day')]);
+    } else if (period === 'week') {
+      setRange([dayjs().startOf('week'), dayjs().endOf('week')]);
+    } else if (period === 'month') {
+      setRange([dayjs().startOf('month'), dayjs().endOf('month')]);
+    }
+  }, [period]);
 
-    const fetchData = async () => {
+  useEffect(() => {
+    const fetchReport = async () => {
+      setLoadingReport(true);
       try {
-        const [reservationResponse, paymentResponse, customerResponse] = await Promise.all([
-          reservationService.list({ page: 0, size: 200, sort: 'date,desc' }),
-          paymentService.list({ page: 0, size: 200, sort: 'id,desc' }),
-          customerService.list({ page: 0, size: 200, sort: 'id,desc' }),
-        ]);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setReservations(reservationResponse.items);
-        setPayments(paymentResponse.items);
-        setCustomers(customerResponse.items);
-      } catch {
-        if (isMounted) {
-          setError('Veriler yüklenirken bir sorun oluştu.');
-        }
+        const response = await reservationApi.report({
+          start: range[0].toISOString(),
+          end: range[1].toISOString(),
+        });
+        setReport(response.data as ReservationReport);
+      } catch (error) {
+        console.error('Rezervasyon raporu yüklenemedi', error);
+        setReport(null);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoadingReport(false);
       }
     };
 
-    fetchData();
+    fetchReport();
+  }, [range]);
 
-    return () => {
-      isMounted = false;
+  useEffect(() => {
+    const fetchUpcoming = async () => {
+      setLoadingUpcoming(true);
+      try {
+        const response = await reservationApi.upcoming({ size: 5, sort: 'date,asc' });
+        setUpcomingReservations(response.data as ReservationListItem[]);
+      } catch (error) {
+        console.error('Yaklaşan rezervasyonlar yüklenemedi', error);
+        setUpcomingReservations([]);
+      } finally {
+        setLoadingUpcoming(false);
+      }
     };
+
+    fetchUpcoming();
   }, []);
 
-  const reservationStats = useMemo(() => {
-    const total = reservations.length;
-    const today = reservations.filter(reservation => dayjs(reservation.date).isSame(dayjs(), 'day')).length;
-    const confirmed = reservations.filter(reservation => reservation.status === 'CONFIRMED').length;
-    const pending = reservations.filter(reservation => reservation.status === 'PENDING').length;
-    const cancelled = reservations.filter(reservation => reservation.status === 'CANCELLED').length;
-    const active = confirmed + pending;
-    const cancellationRate = total ? ((cancelled / total) * 100).toFixed(1) : '0.0';
+  const statusCounts = report?.statusCounts ?? {};
+  const pending = statusCounts.PENDING ?? 0;
+  const confirmed = statusCounts.CONFIRMED ?? 0;
+  const cancelled = statusCounts.CANCELLED ?? 0;
+  const completed = statusCounts.COMPLETED ?? 0;
 
-    return [
+  const reservationStats = useMemo(
+    () => [
       {
-        title: 'Bugünkü Rezervasyonlar',
-        value: today,
-        badge: total ? `${((today / total) * 100).toFixed(0)}%` : '0%',
-        badgeTone: today > 0 ? 'positive' : 'neutral',
-        descriptor: `Toplam kayıt: ${total}`,
+        title: 'Toplam Rezervasyon',
+        value: report?.totalReservations ?? 0,
+        change: `${report?.upcomingReservations ?? 0} yaklaşan`,
+        trend: 'up',
+        descriptor: 'seçili tarih aralığı',
       },
       {
-        title: 'Onaylı Rezervasyonlar',
-        value: confirmed,
-        badge: total ? `${((confirmed / total) * 100).toFixed(0)}%` : '0%',
-        badgeTone: confirmed > 0 ? 'positive' : 'neutral',
-        descriptor: `Aktif rezervasyon: ${active}`,
-      },
-      {
-        title: 'Bekleyen İşlemler',
+        title: 'Bekleyen Rezervasyonlar',
         value: pending,
-        badge: `${customers.length} müşteri`,
-        badgeTone: pending > 0 ? 'warning' : 'neutral',
-        descriptor: 'Onay için sırada',
+        change: `${confirmed} onaylandı`,
+        trend: pending > confirmed ? 'down' : 'up',
+        descriptor: 'işlem bekleyen kayıtlar',
       },
       {
-        title: 'İptal Oranı',
-        value: `${cancellationRate}%`,
-        badge: `${cancelled} kayıt`,
-        badgeTone: cancelled > 0 ? 'negative' : 'positive',
-        descriptor: 'Operasyon kalitesi',
+        title: 'İptaller',
+        value: cancelled,
+        change: `${completed} tamamlandı`,
+        trend: cancelled > 0 ? 'down' : 'up',
+        descriptor: 'iptal edilen rezervasyonlar',
       },
-    ];
-  }, [reservations, customers]);
+    ],
+    [report?.totalReservations, report?.upcomingReservations, pending, confirmed, cancelled, completed],
+  );
 
-  const upcomingReservations = useMemo(() => {
-    return reservations
-      .filter(reservation => dayjs(reservation.date).isAfter(dayjs().subtract(1, 'day')))
-      .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf())
-      .slice(0, 5);
-  }, [reservations]);
+  const occupancyMetrics = useMemo(
+    () => [
+      {
+        label: 'Yaklaşan Rezervasyon',
+        value: report?.upcomingReservations ?? 0,
+        accent: '#2563eb',
+        denominator: Math.max(report?.totalReservations ?? 1, 1),
+      },
+      {
+        label: 'Benzersiz Müşteri',
+        value: report?.distinctCustomers ?? 0,
+        accent: '#38bdf8',
+        denominator: Math.max(report?.totalReservations ?? 1, 1),
+      },
+      {
+        label: 'Aktif İşletme',
+        value: report?.distinctBusinesses ?? 0,
+        accent: '#6366f1',
+        denominator: Math.max(report?.distinctBusinesses ?? 1, 1),
+      },
+    ],
+    [report?.upcomingReservations, report?.distinctCustomers, report?.distinctBusinesses, report?.totalReservations],
+  );
 
-  const serviceDistribution = useMemo(() => {
-    if (!reservations.length) {
-      return [];
-    }
-
-    const counts = new Map<string, number>();
-    reservations.forEach(reservation => {
-      const label = reservation.service?.name ?? 'Hizmet bilgisi yok';
-      counts.set(label, (counts.get(label) ?? 0) + 1);
-    });
-
-    const total = reservations.length;
-
-    return Array.from(counts.entries())
-      .map(([label, count]) => ({
-        label,
-        count,
-        ratio: Math.round((count / total) * 100),
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 4);
-  }, [reservations]);
-
-  const revenueSummary = useMemo(() => {
-    if (!payments.length) {
-      return {
-        total: 0,
-        items: [],
-      };
-    }
-
-    const sumByStatus = (status: string) =>
-      payments.filter(payment => payment.status === status).reduce((total, payment) => total + Number(payment.amount ?? 0), 0);
-
-    const paid = sumByStatus('PAID');
-    const pending = sumByStatus('PENDING');
-    const refunded = sumByStatus('REFUNDED');
-
-    return {
-      total: paid,
-      items: [
-        { key: 'paid', label: 'Tahsil Edilen', amount: paid, tone: 'positive' },
-        { key: 'pending', label: 'Bekleyen Tahsilat', amount: pending, tone: pending > 0 ? 'warning' : 'neutral' },
-        { key: 'refunded', label: 'İade Edilen', amount: refunded, tone: refunded > 0 ? 'negative' : 'neutral' },
-      ],
-    };
-  }, [payments]);
+  const statusBreakdown = [
+    { label: 'Beklemede', value: pending, trend: pending > 0 ? '+%' : '0%' },
+    { label: 'Onaylandı', value: confirmed, trend: confirmed > 0 ? '+%' : '0%' },
+    { label: 'Tamamlandı', value: completed, trend: completed > 0 ? '+%' : '0%' },
+  ];
 
   return (
     <main className="dashboard-page">
@@ -184,129 +159,133 @@ const Dashboard: React.FC = () => {
           <Text className="dashboard-eyebrow">Genel Bakış</Text>
           <Title level={2}>Rezervasyon Paneli</Title>
           <Text className="dashboard-subtitle">
-            Güncel rezervasyonlarınızı takip edin, gelir durumunu görün ve ekip önceliklerini planlayın.
+            Operasyonel görünürlüğü artırmak için rezervasyon dağılımlarını, yaklaşan talepleri ve müşteri etkileşimlerini izleyin.
           </Text>
         </div>
         <Space size={16} className="dashboard-actions" wrap>
-          <RangePicker suffixIcon={<CalendarOutlined />} className="dashboard-range-picker" popupClassName="dashboard-picker-dropdown" />
+          <RangePicker
+            value={range}
+            onChange={values => {
+              if (values && values[0] && values[1]) {
+                setRange([values[0], values[1]] as [Dayjs, Dayjs]);
+                setPeriod('custom');
+              }
+            }}
+            suffixIcon={<CalendarOutlined />}
+            className="dashboard-range-picker"
+            popupClassName="dashboard-picker-dropdown"
+          />
           <Select
             className="dashboard-select"
-            defaultValue="today"
+            value={period}
+            onChange={value => setPeriod(value as 'today' | 'week' | 'month' | 'custom')}
             options={[
               { label: 'Bugün', value: 'today' },
               { label: 'Bu Hafta', value: 'week' },
               { label: 'Bu Ay', value: 'month' },
+              { label: 'Özel Aralık', value: 'custom', disabled: period !== 'custom' },
             ]}
           />
         </Space>
       </header>
 
-      {loading ? (
-        <div className="dashboard-loading">
-          <Spin size="large" />
-        </div>
-      ) : (
-        <>
-          {error && (
-            <div className="dashboard-error">
-              <Text type="danger">{error}</Text>
+      <section className="dashboard-stat-grid">
+        {reservationStats.map(stat => (
+          <Card key={stat.title} className="dashboard-stat-card" bordered={false}>
+            <Skeleton loading={loadingReport} active paragraph={false}>
+              <Text className="stat-label">{stat.title}</Text>
+              <div className="stat-value-row">
+                <Title level={2}>{stat.value}</Title>
+                <Tag
+                  className={`stat-tag ${stat.trend === 'up' ? 'tag-positive' : 'tag-negative'}`}
+                  icon={stat.trend === 'up' ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                >
+                  {stat.change}
+                </Tag>
+              </div>
+              <Text className="stat-helper">{stat.descriptor}</Text>
+            </Skeleton>
+          </Card>
+        ))}
+      </section>
+
+      <section className="dashboard-panels">
+        <Card className="dashboard-card" bordered={false}>
+          <div className="dashboard-card-header">
+            <div>
+              <Text className="dashboard-card-eyebrow">Yaklaşan Rezervasyonlar</Text>
+              <Title level={4}>Önceliklendirilmiş Misafir Akışı</Title>
             </div>
-          )}
-
-          <section className="dashboard-stat-grid">
-            {reservationStats.map(stat => (
-              <Card key={stat.title} className="dashboard-stat-card" bordered={false}>
-                <Text className="stat-label">{stat.title}</Text>
-                <div className="stat-value-row">
-                  <Title level={2}>{stat.value}</Title>
-                  <Tag className={`stat-tag tag-${stat.badgeTone}`}>{stat.badge}</Tag>
+            <Tag icon={<TeamOutlined />} color="blue" className="dashboard-pill">
+              {report?.upcomingReservations ?? 0} misafir
+            </Tag>
+          </div>
+          <List
+            className="dashboard-reservation-list"
+            dataSource={upcomingReservations}
+            loading={loadingUpcoming}
+            locale={{ emptyText: <Empty description="Yaklaşan rezervasyon bulunmuyor" /> }}
+            renderItem={item => (
+              <List.Item className="dashboard-reservation-item" key={item.id}>
+                <List.Item.Meta
+                  avatar={<Avatar>#{item.id}</Avatar>}
+                  title={`Rezervasyon #${item.id}`}
+                  description={dayjs(item.date).format('DD MMM YYYY · HH:mm')}
+                />
+                <div className="reservation-meta">
+                  <Text className="reservation-time">{statusLabels[item.status]}</Text>
+                  <Tag className="reservation-status">{item.status}</Tag>
                 </div>
-                <Text className="stat-helper">{stat.descriptor}</Text>
-              </Card>
-            ))}
-          </section>
+              </List.Item>
+            )}
+          />
+        </Card>
 
-          <section className="dashboard-panels">
-            <Card className="dashboard-card" bordered={false}>
-              <div className="dashboard-card-header">
-                <div>
-                  <Text className="dashboard-card-eyebrow">Yaklaşan Rezervasyonlar</Text>
-                  <Title level={4}>Operasyon Akışı</Title>
-                </div>
-                <Tag icon={<TeamOutlined />} color="blue" className="dashboard-pill">
-                  {upcomingReservations.length} kayıt
-                </Tag>
-              </div>
-              <List
-                className="dashboard-reservation-list"
-                dataSource={upcomingReservations}
-                locale={{ emptyText: <Empty description="Yaklaşan rezervasyon bulunmuyor." /> }}
-                renderItem={item => {
-                  const customerName = [item.customer?.firstName, item.customer?.lastName].filter(Boolean).join(' ') || 'Müşteri';
-                  const serviceName = item.service?.name ?? 'Hizmet bilgisi yok';
-                  return (
-                    <List.Item key={item.id} className="dashboard-reservation-item">
-                      <List.Item.Meta avatar={<Avatar>{customerName.charAt(0)}</Avatar>} title={customerName} description={serviceName} />
-                      <div className="reservation-meta">
-                        <Text className="reservation-time">{dayjs(item.date).format('DD MMM YYYY HH:mm')}</Text>
-                        <Tag color={statusColors[item.status]} className="reservation-status">
-                          {statusLabels[item.status]}
-                        </Tag>
-                      </div>
-                    </List.Item>
-                  );
-                }}
-              />
-            </Card>
-
-            <Card className="dashboard-card" bordered={false}>
-              <div className="dashboard-card-header">
-                <div>
-                  <Text className="dashboard-card-eyebrow">Hizmet Dağılımı</Text>
-                  <Title level={4}>Talep Edilen Kategoriler</Title>
-                </div>
-                <Tag icon={<DollarCircleOutlined />} color="cyan" className="dashboard-pill">
-                  Toplam {reservations.length}
-                </Tag>
-              </div>
-              <div className="dashboard-occupancy">
-                {serviceDistribution.length > 0 ? (
-                  serviceDistribution.map(metric => (
-                    <div key={metric.label} className="occupancy-item">
-                      <div className="occupancy-label-row">
-                        <Text className="occupancy-label">{metric.label}</Text>
-                        <Text className="occupancy-value">%{metric.ratio}</Text>
-                      </div>
-                      <Progress
-                        percent={metric.ratio}
-                        size="small"
-                        strokeLinecap="round"
-                        strokeColor="#2563eb"
-                        trailColor="rgba(148, 163, 184, 0.15)"
-                      />
+        <Card className="dashboard-card" bordered={false}>
+          <div className="dashboard-card-header">
+            <div>
+              <Text className="dashboard-card-eyebrow">Dağılım Analizi</Text>
+              <Title level={4}>Kaynak Optimizasyonu</Title>
+            </div>
+            <Tag icon={<DollarCircleOutlined />} color="cyan" className="dashboard-pill">
+              {report?.distinctCustomers ?? 0} müşteri
+            </Tag>
+          </div>
+          <Skeleton loading={loadingReport} active paragraph={{ rows: 4 }}>
+            <div className="dashboard-occupancy">
+              {occupancyMetrics.map(metric => {
+                const percent = Math.min(100, Math.round((metric.value / metric.denominator) * 100));
+                return (
+                  <div key={metric.label} className="occupancy-item">
+                    <div className="occupancy-label-row">
+                      <Text className="occupancy-label">{metric.label}</Text>
+                      <Text className="occupancy-value">{metric.value}</Text>
                     </div>
-                  ))
-                ) : (
-                  <Empty description="Hizmet verisi bulunmuyor" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                )}
-              </div>
-              <div className="dashboard-revenue">
-                {revenueSummary.items.map(item => (
-                  <div key={item.key} className="revenue-item">
-                    <Text className="revenue-label">{item.label}</Text>
-                    <div className="revenue-value-group">
-                      <Text className="revenue-value">{currencyFormatter.format(item.amount)}</Text>
-                      <Tag className={`revenue-trend tag-${item.tone}`}>
-                        {item.tone === 'positive' ? '✓' : item.tone === 'negative' ? '↺' : '-'}
-                      </Tag>
-                    </div>
+                    <Progress
+                      percent={percent}
+                      size="small"
+                      strokeLinecap="round"
+                      strokeColor={metric.accent}
+                      trailColor="rgba(148, 163, 184, 0.15)"
+                    />
                   </div>
-                ))}
-              </div>
-            </Card>
-          </section>
-        </>
-      )}
+                );
+              })}
+            </div>
+            <div className="dashboard-revenue">
+              {statusBreakdown.map(item => (
+                <div key={item.label} className="revenue-item">
+                  <Text className="revenue-label">{item.label}</Text>
+                  <div className="revenue-value-group">
+                    <Text className="revenue-value">{item.value}</Text>
+                    <Tag className="revenue-trend tag-positive">{item.trend}</Tag>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Skeleton>
+        </Card>
+      </section>
     </main>
   );
 };

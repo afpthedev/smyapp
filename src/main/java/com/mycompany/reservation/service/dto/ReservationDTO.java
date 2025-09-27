@@ -2,7 +2,6 @@ package com.mycompany.reservation.service.dto;
 
 import com.mycompany.reservation.domain.enumeration.ReservationStatus;
 import jakarta.validation.constraints.*;
-
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -28,6 +27,10 @@ public class ReservationDTO implements Serializable {
     private CustomerDTO customer;
 
     private BusinessDTO business;
+
+    private Long userId;
+
+    private String userLogin;
 
     public Long getId() {
         return id;
@@ -85,6 +88,22 @@ public class ReservationDTO implements Serializable {
         this.business = business;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUserLogin() {
+        return userLogin;
+    }
+
+    public void setUserLogin(String userLogin) {
+        this.userLogin = userLogin;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -117,6 +136,8 @@ public class ReservationDTO implements Serializable {
             ", service=" + getService() +
             ", customer=" + getCustomer() +
             ", business=" + getBusiness() +
+            ", userId=" + getUserId() +
+            ", userLogin='" + getUserLogin() + "'" +
             "}";
     }
 }

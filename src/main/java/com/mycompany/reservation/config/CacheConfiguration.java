@@ -1,7 +1,6 @@
 package com.mycompany.reservation.config;
 
 import java.time.Duration;
-
 import org.ehcache.config.builders.*;
 import org.ehcache.jsr107.Eh107Configuration;
 import org.hibernate.cache.jcache.ConfigSettings;
@@ -29,10 +28,10 @@ public class CacheConfiguration {
 
         jcacheConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(
             CacheConfigurationBuilder.newCacheConfigurationBuilder(
-                    Object.class,
-                    Object.class,
-                    ResourcePoolsBuilder.heap(ehcache.getMaxEntries())
-                )
+                Object.class,
+                Object.class,
+                ResourcePoolsBuilder.heap(ehcache.getMaxEntries())
+            )
                 .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(ehcache.getTimeToLiveSeconds())))
                 .build()
         );
@@ -60,6 +59,7 @@ public class CacheConfiguration {
             createCache(cm, com.mycompany.reservation.domain.Customer.class.getName());
             createCache(cm, com.mycompany.reservation.domain.Reservation.class.getName());
             createCache(cm, com.mycompany.reservation.domain.Payment.class.getName());
+            createCache(cm, com.mycompany.reservation.service.ReservationService.CUSTOMER_RESERVATION_SUMMARY_CACHE);
             // jhipster-needle-ehcache-add-entry
         };
     }

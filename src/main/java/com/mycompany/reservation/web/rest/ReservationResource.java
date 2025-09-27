@@ -1,25 +1,30 @@
 package com.mycompany.reservation.web.rest;
 
+import com.mycompany.reservation.domain.enumeration.ReservationStatus;
 import com.mycompany.reservation.repository.ReservationRepository;
+import com.mycompany.reservation.security.AuthoritiesConstants;
 import com.mycompany.reservation.service.ReservationService;
 import com.mycompany.reservation.service.dto.ReservationDTO;
+import com.mycompany.reservation.service.dto.ReservationFilterCriteria;
+import com.mycompany.reservation.service.dto.ReservationReportDTO;
 import com.mycompany.reservation.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -112,7 +117,7 @@ public class ReservationResource {
      * or with status {@code 500 (Internal Server Error)} if the reservationDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = {"application/json", "application/merge-patch+json"})
+    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<ReservationDTO> partialUpdateReservation(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody ReservationDTO reservationDTO
@@ -144,9 +149,58 @@ public class ReservationResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of reservations in body.
      */
     @GetMapping("")
+    @PreAuthorize("hasAuthority('" + AuthoritiesConstants.ADMIN + "')")
     public ResponseEntity<List<ReservationDTO>> getAllReservations(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get a page of Reservations");
         Page<ReservationDTO> page = reservationService.findAll(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<ReservationDTO>> getCurrentUserReservations(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
+        @RequestParam(value = "status", required = false) ReservationStatus status,
+        @RequestParam(value = "businessId", required = false) Long businessId,
+        @RequestParam(value = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime start,
+        @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime end
+    ) {
+        LOG.debug("REST request to get reservations for current user");
+        ReservationFilterCriteria criteria = new ReservationFilterCriteria();
+        criteria.setStatus(status);
+        criteria.setBusinessId(businessId);
+        criteria.setStartDate(start);
+        criteria.setEndDate(end);
+        Page<ReservationDTO> page = reservationService.findForCurrentUser(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/report")
+    @PreAuthorize("hasAuthority('" + AuthoritiesConstants.ADMIN + "')")
+    public ResponseEntity<ReservationReportDTO> getReservationReport(
+        @RequestParam(value = "customerId", required = false) Long customerId,
+        @RequestParam(value = "businessId", required = false) Long businessId,
+        @RequestParam(value = "status", required = false) ReservationStatus status,
+        @RequestParam(value = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime start,
+        @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime end
+    ) {
+        LOG.debug("REST request for reservation report");
+        ReservationFilterCriteria criteria = new ReservationFilterCriteria();
+        criteria.setCustomerId(customerId);
+        criteria.setBusinessId(businessId);
+        criteria.setStatus(status);
+        criteria.setStartDate(start);
+        criteria.setEndDate(end);
+        ReservationReportDTO report = reservationService.getReservationReport(criteria);
+        return ResponseEntity.ok(report);
+    }
+
+    @GetMapping("/upcoming")
+    @PreAuthorize("hasAuthority('" + AuthoritiesConstants.ADMIN + "')")
+    public ResponseEntity<List<ReservationDTO>> getUpcomingReservations(@RequestParam(value = "size", defaultValue = "5") int size) {
+        LOG.debug("REST request for upcoming reservations with size {}", size);
+        Page<ReservationDTO> page = reservationService.findUpcoming(size);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

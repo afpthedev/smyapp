@@ -1,366 +1,332 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Avatar, Card, Empty, List, Progress, Select, Space, Spin, Tag, Typography } from 'antd';
-import { CrownOutlined, CustomerServiceOutlined, HeartOutlined, SmileOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
+import { Card, DatePicker, Empty, List, Select, Skeleton, Space, Statistic, Table, Tag, Typography } from 'antd';
+import dayjs, { Dayjs } from 'dayjs';
+import { CalendarOutlined, TeamOutlined } from '@ant-design/icons';
 import Topbar from '../../components/Topbar';
+import { customerApi } from '../../services/api';
 import '../../styles/workspace.css';
 import './styles.css';
-import { customerService, paymentService, reservationService, type Customer, type Payment, type Reservation } from '../../services/api';
+
+type Customer = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  notes?: string;
+};
+
+type ReservationItem = {
+  id: number;
+  date: string;
+  status: ReservationStatus;
+  notes?: string;
+  service?: { id: number; name?: string } | null;
+};
+
+type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+
+type CustomerSummary = {
+  customerFullName?: string;
+  totalReservations: number;
+  upcomingReservations: number;
+  pendingReservations: number;
+  confirmedReservations: number;
+  completedReservations: number;
+  cancelledReservations: number;
+  lastReservationDate?: string;
+  nextReservationDate?: string;
+};
 
 const { Title, Text } = Typography;
+const { RangePicker } = DatePicker;
 
-const currencyFormatter = new Intl.NumberFormat('tr-TR', {
-  style: 'currency',
-  currency: 'TRY',
-  maximumFractionDigits: 0,
-});
+const statusColors: Record<ReservationStatus, string> = {
+  PENDING: 'gold',
+  CONFIRMED: 'green',
+  CANCELLED: 'red',
+  COMPLETED: 'blue',
+};
 
-interface CustomerInsight extends Customer {
-  reservationCount: number;
-  lastReservation?: string;
-  nextReservation?: string;
-  nextStatus?: string;
-  totalPaid: number;
-}
+const statusLabels: Record<ReservationStatus, string> = {
+  PENDING: 'Beklemede',
+  CONFIRMED: 'Onaylandı',
+  CANCELLED: 'İptal',
+  COMPLETED: 'Tamamlandı',
+};
 
 const Customers: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [segmentFilter, setSegmentFilter] = useState<string>('all');
+  const [loadingCustomers, setLoadingCustomers] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
+  const [reservations, setReservations] = useState<ReservationItem[]>([]);
+  const [reservationsLoading, setReservationsLoading] = useState(false);
+  const [summary, setSummary] = useState<CustomerSummary | null>(null);
+  const [statusFilter, setStatusFilter] = useState<ReservationStatus | undefined>();
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
+  const [reservationPagination, setReservationPagination] = useState({ current: 1, pageSize: 5, total: 0 });
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchData = async () => {
+    const fetchCustomers = async () => {
+      setLoadingCustomers(true);
       try {
-        const [customerResponse, reservationResponse, paymentResponse] = await Promise.all([
-          customerService.list({ page: 0, size: 200, sort: 'id,desc' }),
-          reservationService.list({ page: 0, size: 200, sort: 'date,desc' }),
-          paymentService.list({ page: 0, size: 200, sort: 'id,desc' }),
-        ]);
-
-        if (!isMounted) {
-          return;
+        const response = await customerApi.list({ page: 0, size: 50, sort: 'lastName,asc' });
+        const data: Customer[] = response.data ?? [];
+        setCustomers(data);
+        if (data.length > 0) {
+          setSelectedCustomerId(data[0].id);
         }
-
-        setCustomers(customerResponse.items);
-        setReservations(reservationResponse.items);
-        setPayments(paymentResponse.items);
-      } catch {
-        if (isMounted) {
-          setError('Müşteri verileri alınamadı.');
-        }
+      } catch (error) {
+        console.error('Müşteri listesi yüklenemedi', error);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoadingCustomers(false);
       }
     };
 
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
+    fetchCustomers();
   }, []);
 
-  const insights = useMemo<CustomerInsight[]>(() => {
-    const paymentsByCustomer = payments.reduce<Record<number, number>>((acc, payment) => {
-      if (payment.customer?.id && payment.status === 'PAID') {
-        acc[payment.customer.id] = (acc[payment.customer.id] ?? 0) + Number(payment.amount ?? 0);
+  useEffect(() => {
+    const loadReservations = async () => {
+      if (!selectedCustomerId) {
+        setSummary(null);
+        setReservations([]);
+        setReservationPagination(prev => ({ ...prev, total: 0 }));
+        return;
       }
-      return acc;
-    }, {});
+      setReservationsLoading(true);
+      try {
+        const params: Record<string, unknown> = {
+          page: reservationPagination.current - 1,
+          size: reservationPagination.pageSize,
+          sort: 'date,desc',
+        };
+        if (statusFilter) {
+          params.status = statusFilter;
+        }
+        if (dateRange) {
+          params.start = dateRange[0].toISOString();
+          params.end = dateRange[1].toISOString();
+        }
 
-    return customers.map(customer => {
-      const relatedReservations = reservations
-        .filter(reservation => reservation.customer?.id === customer.id)
-        .sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf());
+        const [summaryResponse, reservationsResponse] = await Promise.all([
+          customerApi.reservationSummary(selectedCustomerId),
+          customerApi.reservations(selectedCustomerId, params),
+        ]);
 
-      const lastReservation = relatedReservations[0];
-      const upcomingReservation = relatedReservations.find(reservation => dayjs(reservation.date).isAfter(dayjs()));
+        setSummary(summaryResponse.data);
+        setReservations(reservationsResponse.data ?? []);
+        const totalCountHeader = reservationsResponse.headers?.['x-total-count'];
+        const total = totalCountHeader ? Number.parseInt(totalCountHeader, 10) : (reservationsResponse.data?.length ?? 0);
+        setReservationPagination(prev => ({ ...prev, total: Number.isNaN(total) ? 0 : total }));
+      } catch (error) {
+        console.error('Rezervasyonlar yüklenirken hata oluştu', error);
+      } finally {
+        setReservationsLoading(false);
+      }
+    };
 
-      return {
-        ...customer,
-        reservationCount: relatedReservations.length,
-        lastReservation: lastReservation?.date,
-        nextReservation: upcomingReservation?.date,
-        nextStatus: upcomingReservation?.status,
-        totalPaid: paymentsByCustomer[customer.id ?? 0] ?? 0,
-      };
-    });
-  }, [customers, reservations, payments]);
+    loadReservations();
+  }, [selectedCustomerId, statusFilter, dateRange, reservationPagination.current, reservationPagination.pageSize]);
 
-  const totalCustomers = customers.length;
-  const customersWithReservations = insights.filter(customer => customer.reservationCount > 0).length;
-  const loyalCustomers = insights.filter(customer => customer.reservationCount > 1).length;
-  const totalRevenue = payments.filter(payment => payment.status === 'PAID').reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
-  const averageRevenuePerCustomer = customersWithReservations ? totalRevenue / customersWithReservations : 0;
+  const handleCustomerSelect = (customerId: number) => {
+    setSelectedCustomerId(customerId);
+    setReservationPagination(prev => ({ ...prev, current: 1 }));
+  };
 
-  const customerHighlights = [
+  const summaryCards = useMemo(
+    () => [
+      {
+        label: 'Toplam Rezervasyon',
+        value: summary?.totalReservations ?? 0,
+      },
+      {
+        label: 'Beklemede',
+        value: summary?.pendingReservations ?? 0,
+      },
+      {
+        label: 'Onaylanan',
+        value: summary?.confirmedReservations ?? 0,
+      },
+      {
+        label: 'Tamamlanan',
+        value: summary?.completedReservations ?? 0,
+      },
+      {
+        label: 'İptal Edilen',
+        value: summary?.cancelledReservations ?? 0,
+      },
+    ],
+    [summary],
+  );
+
+  const reservationsColumns = [
     {
-      title: 'Toplam Müşteri',
-      value: totalCustomers,
-      helper: `${customersWithReservations} kayıtlı rezervasyon`,
-      progress: 100,
-      accent: '#2563eb',
+      title: 'Rezervasyon Tarihi',
+      dataIndex: 'date',
+      key: 'date',
+      render: (value: string) => dayjs(value).format('DD MMM YYYY · HH:mm'),
     },
     {
-      title: 'Aktif İlişkiler',
-      value: customersWithReservations,
-      helper: `${totalCustomers ? Math.round((customersWithReservations / totalCustomers) * 100) : 0}% oran`,
-      progress: totalCustomers ? Math.round((customersWithReservations / totalCustomers) * 100) : 0,
-      accent: '#6366f1',
+      title: 'Durum',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: ReservationStatus) => (
+        <Tag color={statusColors[status]} className="customers-status-tag">
+          {statusLabels[status]}
+        </Tag>
+      ),
     },
     {
-      title: 'Tekrar Eden Müşteri',
-      value: loyalCustomers,
-      helper: `${customersWithReservations ? Math.round((loyalCustomers / customersWithReservations) * 100) : 0}% dönüşüm`,
-      progress: customersWithReservations ? Math.round((loyalCustomers / customersWithReservations) * 100) : 0,
-      accent: '#10b981',
-    },
-    {
-      title: 'Müşteri Başına Gelir',
-      value: currencyFormatter.format(averageRevenuePerCustomer || 0),
-      helper: `Toplam gelir: ${currencyFormatter.format(totalRevenue)}`,
-      progress: totalRevenue ? Math.min(100, Math.round((averageRevenuePerCustomer / (totalRevenue || 1)) * 100)) : 0,
-      accent: '#f97316',
+      title: 'Notlar',
+      dataIndex: 'notes',
+      key: 'notes',
+      ellipsis: true,
+      render: (notes?: string) => notes || '—',
     },
   ];
-
-  const filteredInsights = useMemo(() => {
-    if (segmentFilter === 'all') {
-      return insights;
-    }
-
-    if (segmentFilter === 'loyal') {
-      return insights.filter(customer => customer.reservationCount > 1);
-    }
-
-    if (segmentFilter === 'inactive') {
-      return insights.filter(customer => customer.reservationCount === 0);
-    }
-
-    return insights;
-  }, [insights, segmentFilter]);
-
-  const servicePreferences = useMemo(() => {
-    const counts = reservations.reduce<Record<string, Set<number>>>((acc, reservation) => {
-      const serviceName = reservation.service?.name ?? 'Hizmet bilgisi yok';
-      const customerId = reservation.customer?.id;
-      if (!customerId) {
-        return acc;
-      }
-      if (!acc[serviceName]) {
-        acc[serviceName] = new Set();
-      }
-      acc[serviceName].add(customerId);
-      return acc;
-    }, {});
-
-    return Object.entries(counts)
-      .map(([serviceName, customerSet]) => ({
-        serviceName,
-        uniqueCustomers: customerSet.size,
-      }))
-      .sort((a, b) => b.uniqueCustomers - a.uniqueCustomers)
-      .slice(0, 5);
-  }, [reservations]);
-
-  const pendingFollowUps = useMemo(() => {
-    return reservations
-      .filter(reservation => reservation.status === 'PENDING')
-      .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf())
-      .slice(0, 5)
-      .map(reservation => {
-        const customerName = [reservation.customer?.firstName, reservation.customer?.lastName].filter(Boolean).join(' ') || 'Müşteri';
-        const serviceName = reservation.service?.name ?? 'Hizmet bilgisi yok';
-        return {
-          id: reservation.id,
-          title: serviceName,
-          owner: customerName,
-          due: dayjs(reservation.date).format('DD MMM YYYY HH:mm'),
-          status: reservation.status,
-        };
-      });
-  }, [reservations]);
 
   return (
     <main className="workspace-page customers-page">
       <Topbar />
       <header className="workspace-header">
         <div>
-          <Text className="workspace-eyebrow">Müşteri Analitiği</Text>
-          <Title level={2}>Müşteri Deneyimi Merkezi</Title>
+          <Text className="workspace-eyebrow">Misafir Analitiği</Text>
+          <Title level={2}>Müşteri Rezervasyon Merkezi</Title>
           <Text className="workspace-subtitle">
-            Sadakat üyelerinizi tanıyın, segment performansını takip edin ve kişiselleştirilmiş aksiyonlarla gelir etkisini artırın.
+            Müşterilerinizin rezervasyon geçmişini analiz edin, ileri tarihlerdeki planları takip edin ve aksiyon alın.
           </Text>
         </div>
         <Space size={16} className="workspace-actions" wrap>
-          <Select
-            value={segmentFilter}
-            onChange={value => setSegmentFilter(value)}
-            options={[
-              { label: 'Tüm Müşteriler', value: 'all' },
-              { label: 'Tekrar Eden', value: 'loyal' },
-              { label: 'Pasif', value: 'inactive' },
-            ]}
-          />
-          <Select
-            defaultValue="quarter"
-            options={[
-              { label: 'Bu Ay', value: 'month' },
-              { label: 'Bu Çeyrek', value: 'quarter' },
-              { label: 'Bu Yıl', value: 'year' },
-            ]}
-          />
+          <Tag icon={<TeamOutlined />} className="workspace-pill">
+            {customers.length} kayıt
+          </Tag>
+          <Tag icon={<CalendarOutlined />} className="workspace-pill">
+            {summary?.upcomingReservations ?? 0} yaklaşan
+          </Tag>
         </Space>
       </header>
 
-      {loading ? (
-        <div className="workspace-loader">
-          <Spin size="large" />
-        </div>
-      ) : (
-        <>
-          {error && (
-            <div className="workspace-error">
-              <Text type="danger">{error}</Text>
-            </div>
-          )}
-
-          <section className="workspace-section customers-overview">
-            <div className="workspace-stat-grid">
-              {customerHighlights.map(highlight => (
-                <Card key={highlight.title} className="workspace-stat-card" bordered={false}>
-                  <Text className="workspace-stat-label">{highlight.title}</Text>
-                  <div className="customers-stat-value">
-                    <Title level={3}>{highlight.value}</Title>
-                    <span className="customers-helper" style={{ color: highlight.accent }}>
-                      {highlight.helper}
-                    </span>
-                  </div>
-                  <Progress
-                    percent={Math.min(100, highlight.progress)}
-                    strokeColor={highlight.accent}
-                    trailColor="rgba(148, 163, 184, 0.18)"
-                    strokeLinecap="round"
-                  />
-                </Card>
-              ))}
-            </div>
-          </section>
-
-          <section className="workspace-section customers-grid">
-            <Card className="workspace-card customers-list-card" bordered={false}>
-              <div className="workspace-card-header">
-                <div>
-                  <Text className="workspace-stat-label">Müşteri Profilleri</Text>
-                  <Title level={4}>İlişki Durumu</Title>
-                </div>
-                <Tag icon={<CrownOutlined />} className="workspace-pill">
-                  {customersWithReservations} aktif müşteri
-                </Tag>
-              </div>
-              <List
-                className="customers-list"
-                dataSource={filteredInsights}
-                locale={{ emptyText: <Empty description="Kayıt bulunamadı." /> }}
-                renderItem={customer => (
-                  <List.Item className="customers-item" key={customer.id}>
+      <section className="customers-layout">
+        <Card className="customers-list-card" bordered={false} title="Müşteriler">
+          {loadingCustomers ? (
+            <Skeleton active paragraph={{ rows: 6 }} />
+          ) : (
+            <List
+              className="customers-list"
+              dataSource={customers}
+              locale={{ emptyText: <Empty description="Kayıtlı müşteri bulunamadı" /> }}
+              renderItem={customer => {
+                const isSelected = customer.id === selectedCustomerId;
+                return (
+                  <List.Item
+                    key={customer.id}
+                    className={`customers-item ${isSelected ? 'selected' : ''}`}
+                    onClick={() => handleCustomerSelect(customer.id)}
+                  >
                     <List.Item.Meta
-                      avatar={<Avatar>{(customer.firstName || customer.lastName || '?').charAt(0)}</Avatar>}
-                      title={`${customer.firstName ?? ''} ${customer.lastName ?? ''}`.trim() || customer.email}
+                      title={`${customer.firstName} ${customer.lastName}`}
                       description={
-                        <div className="customers-interests">
-                          <Tag color="blue">{customer.email}</Tag>
-                          <Tag color="cyan">{customer.phone}</Tag>
-                          <Tag color="purple">{`${customer.reservationCount} rezervasyon`}</Tag>
+                        <div className="customers-item-meta">
+                          <span>{customer.email}</span>
+                          <span>{customer.phone}</span>
                         </div>
                       }
                     />
-                    <div className="customers-meta">
-                      <Text className="customers-meta-label">Son Rezervasyon</Text>
-                      <Text className="customers-meta-value">
-                        {customer.lastReservation ? dayjs(customer.lastReservation).format('DD MMM YYYY') : 'Kayıt yok'}
-                      </Text>
-                      <Text className="customers-meta-label">Bekleyen</Text>
-                      <Text className="customers-meta-value">
-                        {customer.nextReservation
-                          ? `${dayjs(customer.nextReservation).format('DD MMM HH:mm')} · ${customer.nextStatus ?? ''}`
-                          : 'Aktif işlem yok'}
-                      </Text>
-                      <Text className="customers-meta-label">Toplam Ödeme</Text>
-                      <Text className="customers-meta-value">{currencyFormatter.format(customer.totalPaid)}</Text>
-                    </div>
                   </List.Item>
-                )}
-              />
-            </Card>
+                );
+              }}
+            />
+          )}
+        </Card>
 
-            <Card className="workspace-card customers-segments-card" bordered={false}>
-              <div className="workspace-card-header">
-                <div>
-                  <Text className="workspace-stat-label">Hizmet Tercihleri</Text>
-                  <Title level={4}>En Popüler Seçimler</Title>
-                </div>
-                <Tag icon={<HeartOutlined />} className="workspace-pill">
-                  {servicePreferences.length} kategori
-                </Tag>
-              </div>
-              <div className="customers-segments">
-                {servicePreferences.length > 0 ? (
-                  servicePreferences.map(preference => (
-                    <div key={preference.serviceName} className="customers-segment-item">
-                      <div className="customers-segment-header">
-                        <Text className="customers-segment-name">{preference.serviceName}</Text>
-                        <Text className="customers-segment-value">{preference.uniqueCustomers} müşteri</Text>
-                      </div>
-                      <Progress
-                        percent={Math.min(100, Math.round((preference.uniqueCustomers / (totalCustomers || 1)) * 100))}
-                        strokeColor="#2563eb"
-                        trailColor="rgba(148, 163, 184, 0.18)"
-                        strokeLinecap="round"
-                      />
-                    </div>
-                  ))
-                ) : (
-                  <Empty description="Hizmet tercih verisi bulunmuyor." image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                )}
-              </div>
-
-              <div className="customers-follow-ups">
-                <div className="customers-follow-ups-header">
-                  <Text className="workspace-stat-label">Takip Gerektiren Rezervasyonlar</Text>
-                  <Tag icon={<CustomerServiceOutlined />} className="workspace-pill">
-                    {pendingFollowUps.length} kayıt
+        <Space direction="vertical" size={24} className="customers-detail-column">
+          <Card bordered={false} className="customers-summary-card">
+            {summary ? (
+              <>
+                <div className="customers-summary-header">
+                  <div>
+                    <Text className="workspace-stat-label">Seçili Müşteri</Text>
+                    <Title level={4}>{summary.customerFullName ?? 'Müşteri'}</Title>
+                  </div>
+                  <Tag color="blue" className="workspace-pill">
+                    Toplam {summary.totalReservations}
                   </Tag>
                 </div>
-                <List
-                  dataSource={pendingFollowUps}
-                  locale={{ emptyText: <Empty description="Bekleyen rezervasyon bulunmuyor." /> }}
-                  renderItem={item => (
-                    <List.Item key={item.id} className="customers-follow-up-item">
-                      <div className="customers-follow-up-main">
-                        <Text className="customers-follow-up-title">{item.title}</Text>
-                        <Text className="customers-follow-up-owner">{item.owner}</Text>
-                      </div>
-                      <div className="customers-follow-up-meta">
-                        <Tag color="gold" icon={<SmileOutlined />}>
-                          {item.due}
-                        </Tag>
-                      </div>
-                    </List.Item>
-                  )}
-                />
-              </div>
-            </Card>
-          </section>
-        </>
-      )}
+                <div className="customers-summary-grid">
+                  {summaryCards.map(card => (
+                    <Statistic key={card.label} title={card.label} value={card.value} />
+                  ))}
+                </div>
+                <div className="customers-summary-meta">
+                  <Text>
+                    Son rezervasyon: {summary.lastReservationDate ? dayjs(summary.lastReservationDate).format('DD MMM YYYY HH:mm') : '—'}
+                  </Text>
+                  <Text>
+                    Sıradaki rezervasyon:{' '}
+                    {summary.nextReservationDate ? dayjs(summary.nextReservationDate).format('DD MMM YYYY HH:mm') : '—'}
+                  </Text>
+                </div>
+              </>
+            ) : (
+              <Empty description="Müşteri seçiniz" />
+            )}
+          </Card>
+
+          <Card bordered={false} className="customers-reservations-card" title="Rezervasyonlar">
+            <Space className="customers-filters" size={12} wrap>
+              <Select
+                allowClear
+                placeholder="Durum seçin"
+                value={statusFilter}
+                onChange={value => {
+                  setStatusFilter(value as ReservationStatus | undefined);
+                  setReservationPagination(prev => ({ ...prev, current: 1 }));
+                }}
+                options={Object.entries(statusLabels).map(([value, label]) => ({ value, label }))}
+                className="customers-filter-control"
+              />
+              <RangePicker
+                value={dateRange as [Dayjs, Dayjs] | null}
+                onChange={values => {
+                  setDateRange(values as [Dayjs, Dayjs] | null);
+                  setReservationPagination(prev => ({ ...prev, current: 1 }));
+                }}
+                allowClear
+                className="customers-filter-control"
+              />
+            </Space>
+            <Table<ReservationItem>
+              className="customers-reservations-table"
+              dataSource={reservations}
+              columns={reservationsColumns}
+              pagination={{
+                current: reservationPagination.current,
+                pageSize: reservationPagination.pageSize,
+                total: reservationPagination.total,
+                showSizeChanger: true,
+                showTotal: total => `${total} rezervasyon`,
+              }}
+              rowKey="id"
+              loading={reservationsLoading}
+              locale={{
+                emptyText: selectedCustomerId ? (
+                  <Empty description="Filtrelere uygun rezervasyon bulunamadı" />
+                ) : (
+                  <Empty description="Müşteri seçiniz" />
+                ),
+              }}
+              onChange={pagination => {
+                setReservationPagination(prev => ({
+                  ...prev,
+                  current: pagination.current ?? prev.current,
+                  pageSize: pagination.pageSize ?? prev.pageSize,
+                }));
+              }}
+            />
+          </Card>
+        </Space>
+      </section>
     </main>
   );
 };

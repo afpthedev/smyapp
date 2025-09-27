@@ -65,6 +65,7 @@ public class ReservationAsserts {
             .as("Verify Reservation relationships")
             .satisfies(a -> assertThat(a.getService()).as("check service").isEqualTo(expected.getService()))
             .satisfies(a -> assertThat(a.getCustomer()).as("check customer").isEqualTo(expected.getCustomer()))
-            .satisfies(a -> assertThat(a.getBusiness()).as("check business").isEqualTo(expected.getBusiness()));
+            .satisfies(a -> assertThat(a.getBusiness()).as("check business").isEqualTo(expected.getBusiness()))
+            .satisfies(a -> assertThat(a.getUser()).as("check user").isEqualTo(expected.getUser()));
     }
 }

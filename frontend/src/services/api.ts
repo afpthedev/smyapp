@@ -17,7 +17,9 @@ api.interceptors.request.use(
     }
     return config;
   },
-  error => Promise.reject(error),
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 api.interceptors.response.use(
@@ -145,65 +147,7 @@ export const authService = {
   },
   isAuthenticated() {
     return localStorage.getItem('token') !== null;
-  },
-};
-
-export const reservationService = {
-  async list(params?: ListParams): Promise<PaginatedResponse<Reservation>> {
-    const response = await api.get<Reservation[]>('/reservations', { params });
-    return { items: response.data, total: parseTotal(response) };
-  },
-  async create(payload: ReservationCreateInput): Promise<Reservation> {
-    const response = await api.post<Reservation>('/reservations', {
-      date: payload.date,
-      status: payload.status,
-      notes: payload.notes,
-      service: payload.serviceId ? { id: payload.serviceId } : undefined,
-      customer: payload.customerId ? { id: payload.customerId } : undefined,
-      business: payload.businessId ? { id: payload.businessId } : undefined,
-    });
-    return response.data;
-  },
-};
-
-export const customerService = {
-  async list(params?: ListParams): Promise<PaginatedResponse<Customer>> {
-    const response = await api.get<Customer[]>('/customers', { params });
-    return { items: response.data, total: parseTotal(response) };
-  },
-};
-
-export const paymentService = {
-  async list(params?: ListParams): Promise<PaginatedResponse<Payment>> {
-    const response = await api.get<Payment[]>('/payments', { params });
-    return { items: response.data, total: parseTotal(response) };
-  },
-};
-
-export const businessService = {
-  async list(params?: ListParams): Promise<PaginatedResponse<Business>> {
-    const response = await api.get<Business[]>('/businesses', { params });
-    return { items: response.data, total: parseTotal(response) };
-  },
-};
-
-export const accountService = {
-  getProfile() {
-    return api.get<AdminUser>('/account');
-  },
-  updateProfile(payload: AdminUser) {
-    return api.post('/account', payload);
-  },
-  changePassword(currentPassword: string, newPassword: string) {
-    return api.post('/account/change-password', { currentPassword, newPassword });
-  },
-};
-
-export const publicReservationService = {
-  async create(payload: PublicReservationPayload): Promise<Reservation> {
-    const response = await api.post<Reservation>('/public/reservations', payload);
-    return response.data;
-  },
+  }
 };
 
 export default api;
