@@ -17,9 +17,9 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
+  error => {
     return Promise.reject(error);
-  }
+  },
 );
 
 api.interceptors.response.use(
@@ -136,6 +136,12 @@ const parseTotal = <T>(response: AxiosResponse<T[]>): number => {
   return Number.isNaN(total) ? response.data.length : total;
 };
 
+type QueryParams = ListParams & Record<string, unknown>;
+
+export interface ReservationApprovalInput {
+  notes?: string;
+}
+
 export const authService = {
   async login(username: string, password: string, rememberMe = false) {
     const response = await api.post<{ id_token: string }>('/authenticate', { username, password, rememberMe });
@@ -147,7 +153,84 @@ export const authService = {
   },
   isAuthenticated() {
     return localStorage.getItem('token') !== null;
-  }
+  },
+};
+
+export const accountService = {
+  getProfile() {
+    return api.get<AdminUser>('/account');
+  },
+  updateProfile(payload: AdminUser) {
+    return api.post<void>('/account', payload);
+  },
+  changePassword(currentPassword: string, newPassword: string) {
+    return api.post<void>('/account/change-password', { currentPassword, newPassword });
+  },
+};
+
+export const reservationService = {
+  async list(params: QueryParams = {}) {
+    const response = await api.get<Reservation[]>('/reservations', { params });
+    return {
+      items: response.data,
+      total: parseTotal(response),
+    } satisfies PaginatedResponse<Reservation>;
+  },
+  async create(payload: ReservationCreateInput) {
+    const response = await api.post<Reservation>('/reservations', payload);
+    return response.data;
+  },
+  async approve(id: number, payload?: ReservationApprovalInput) {
+    const response = await api.post<Reservation>(`/reservations/${id}/approve`, payload ?? {});
+    return response.data;
+  },
+};
+
+export const reservationApi = {
+  report(params: Record<string, unknown>) {
+    return api.get('/reservations/report', { params });
+  },
+  upcoming(params?: QueryParams) {
+    return api.get('/reservations/upcoming', { params });
+  },
+};
+
+export const businessService = {
+  async list(params: QueryParams = {}) {
+    const response = await api.get<Business[]>('/businesses', { params });
+    return {
+      items: response.data,
+      total: parseTotal(response),
+    } satisfies PaginatedResponse<Business>;
+  },
+};
+
+export const customerApi = {
+  list(params?: QueryParams) {
+    return api.get('/customers', { params });
+  },
+  reservations(customerId: number, params?: QueryParams) {
+    return api.get(`/customers/${customerId}/reservations`, { params });
+  },
+  reservationSummary(customerId: number) {
+    return api.get(`/customers/${customerId}/reservations/summary`);
+  },
+};
+
+export const paymentService = {
+  async list(params: QueryParams = {}) {
+    const response = await api.get<Payment[]>('/payments', { params });
+    return {
+      items: response.data,
+      total: parseTotal(response),
+    } satisfies PaginatedResponse<Payment>;
+  },
+};
+
+export const publicReservationService = {
+  create(payload: PublicReservationPayload) {
+    return api.post('/public/reservations', payload);
+  },
 };
 
 export default api;

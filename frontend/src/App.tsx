@@ -11,7 +11,7 @@ import { authService } from './services/api';
 import './App.css';
 
 interface RequireAuthProps {
-  children: JSX.Element;
+  children: React.ReactNode;
 }
 
 const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {

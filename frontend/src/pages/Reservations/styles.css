@@ -84,6 +84,31 @@
   font-weight: 600;
 }
 
+.reservations-meta .ant-btn {
+  margin-top: 4px;
+}
+
+.reservations-approve-details {
+  background: rgba(37, 99, 235, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reservations-approve-time {
+  font-weight: 600;
+  color: rgba(37, 99, 235, 0.85);
+}
+
+.reservations-approve-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+
 .reservations-channel-list {
   display: flex;
   flex-direction: column;
