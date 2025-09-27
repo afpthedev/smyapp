@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, Card, Col, Divider, Form, Input, Row, Space, Typography, Upload, message } from 'antd';
 import type { UploadProps } from 'antd';
-import { CameraOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CameraOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import './styles.css';
 
 const { Title, Text } = Typography;
@@ -9,7 +10,16 @@ const { Title, Text } = Typography;
 const initialAvatar = 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=320&q=80';
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState<string>(initialAvatar);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/dashboard');
+    }
+  };
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -51,6 +61,11 @@ const Profile: React.FC = () => {
   return (
     <main className="profile-page">
       {contextHolder}
+      <div className="profile-toolbar">
+        <Button type="link" icon={<ArrowLeftOutlined />} onClick={handleBack} className="profile-back-button">
+          Önceki sayfaya dön
+        </Button>
+      </div>
       <Card className="profile-card" bordered={false}>
         <div className="profile-header">
           <div className="profile-heading">

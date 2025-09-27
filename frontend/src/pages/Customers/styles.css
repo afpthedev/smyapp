@@ -1,0 +1,243 @@
+.customers-page .workspace-stat-card .ant-card-body {
+  gap: 16px;
+}
+
+.customers-stat-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.customers-stat-value h3.ant-typography {
+  margin: 0;
+  font-size: clamp(26px, 2.6vw, 32px);
+}
+
+.customers-helper {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid currentColor;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.customers-grid {
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+
+.customers-list {
+  margin-top: 12px;
+}
+
+.customers-item {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  padding: 18px 0 !important;
+}
+
+.customers-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0 !important;
+}
+
+.customers-item .ant-avatar {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.customers-interests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: rgba(71, 85, 105, 0.75);
+}
+
+.customers-interests .ant-tag {
+  border-radius: 999px;
+  padding: 0 12px;
+  background: rgba(99, 102, 241, 0.08);
+  border: none;
+  color: rgba(79, 70, 229, 0.85);
+  font-weight: 600;
+}
+
+.customers-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.customers-tier.ant-tag {
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-weight: 600;
+  border: none;
+}
+
+.customers-spend {
+  font-weight: 700;
+  color: rgba(15, 23, 42, 0.85);
+}
+
+.customers-visits {
+  color: rgba(71, 85, 105, 0.75);
+}
+
+.customers-segment-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.customers-sentiment {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.customers-sentiment .ant-progress {
+  transform: scale(0.9);
+}
+
+.customers-sentiment-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 220px;
+}
+
+.customers-sentiment-copy h4.ant-typography {
+  margin: 0;
+}
+
+.customers-segment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.customers-segment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.customers-segment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.customers-segment-name {
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.85);
+}
+
+.customers-segment-tag.ant-tag {
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-weight: 600;
+  border: none;
+}
+
+.customers-follow-ups {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.customers-follow-up-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.customers-follow-up-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: linear-gradient(140deg, rgba(37, 99, 235, 0.06), rgba(56, 189, 248, 0.08));
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.customers-follow-up-item h5.ant-typography {
+  margin: 0;
+}
+
+.customers-follow-up-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customers-follow-up-status.ant-tag {
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-weight: 600;
+  border: none;
+}
+
+.customers-feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.customers-feedback-card {
+  margin: 0;
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 24px 45px -36px rgba(15, 23, 42, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.customers-feedback-card p {
+  margin: 0;
+  color: rgba(30, 41, 59, 0.78);
+  font-style: italic;
+}
+
+.customers-feedback-card footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: rgba(15, 23, 42, 0.65);
+}
+
+.customers-feedback-card strong {
+  color: rgba(15, 23, 42, 0.85);
+}
+
+@media (max-width: 960px) {
+  .customers-meta {
+    align-items: flex-start;
+  }
+
+  .customers-sentiment {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .customers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .customers-stat-value {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
