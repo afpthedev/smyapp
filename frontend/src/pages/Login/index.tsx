@@ -1,10 +1,11 @@
-import React, {useState} from 'react';
-import {Form, Input, Button, Checkbox, Card, Typography, message, Alert} from 'antd';
-import {UserOutlined, LockOutlined} from '@ant-design/icons';
-import {authService} from '../../services/api';
+import React, { useState } from 'react';
+import { Form, Input, Button, Checkbox, Card, Typography, message, Alert } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import { authService } from '../../services/api';
 import './styles.css';
 
-const {Title, Text} = Typography;
+const { Title, Text } = Typography;
 
 interface LoginFormValues {
   username: string;
@@ -35,8 +36,8 @@ const Login: React.FC = () => {
         // Ana sayfaya yönlendirme
         window.location.href = '/dashboard';
       }
-    } catch (error: any) {
-      if (error.isAxiosError) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
         // API hatası
         if (error.response?.status === 401) {
           setError('Kullanıcı adı veya şifre hatalı!');
@@ -47,6 +48,8 @@ const Login: React.FC = () => {
         } else {
           setError('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
         }
+      } else {
+        setError('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
       }
       message.error('Giriş başarısız!');
     } finally {
@@ -70,47 +73,32 @@ const Login: React.FC = () => {
             showIcon
             closable
             className="login-error"
-            style={{marginBottom: 24}}
+            style={{ marginBottom: 24 }}
           />
         )}
 
-        <Form
-          name="login"
-          className="login-form"
-          initialValues={{remember: true}}
-          onFinish={onFinish}
-          form={form}
-        >
+        <Form name="login" className="login-form" initialValues={{ remember: true }} onFinish={onFinish} form={form}>
           <Form.Item
             name="username"
             rules={[
-              {required: true, message: 'Lütfen kullanıcı adınızı girin!'},
-              {min: 3, message: 'Kullanıcı adı en az 3 karakter olmalıdır!'},
-              {max: 50, message: 'Kullanıcı adı en fazla 50 karakter olabilir!'}
+              { required: true, message: 'Lütfen kullanıcı adınızı girin!' },
+              { min: 3, message: 'Kullanıcı adı en az 3 karakter olmalıdır!' },
+              { max: 50, message: 'Kullanıcı adı en fazla 50 karakter olabilir!' },
             ]}
           >
-            <Input
-              prefix={<UserOutlined/>}
-              placeholder="Kullanıcı Adı"
-              size="large"
-            />
+            <Input prefix={<UserOutlined />} placeholder="Kullanıcı Adı" size="large" />
           </Form.Item>
 
           <Form.Item
             name="password"
             rules={[
-              {required: true, message: 'Lütfen şifrenizi girin!'},
+              { required: true, message: 'Lütfen şifrenizi girin!' },
               {
-                message: 'Şifre en az bir harf ve bir rakam içermelidir!'
-              }
+                message: 'Şifre en az bir harf ve bir rakam içermelidir!',
+              },
             ]}
           >
-            <Input
-              prefix={<LockOutlined/>}
-              type="password"
-              placeholder="Şifre"
-              size="large"
-            />
+            <Input prefix={<LockOutlined />} type="password" placeholder="Şifre" size="large" />
           </Form.Item>
 
           <Form.Item>
@@ -126,13 +114,7 @@ const Login: React.FC = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="login-form-button"
-              loading={loading}
-              block
-            >
+            <Button type="primary" htmlType="submit" className="login-form-button" loading={loading} block>
               Giriş Yap
             </Button>
           </Form.Item>
