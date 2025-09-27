@@ -33,7 +33,7 @@ enum BusinessType {
   OTHER
 }
 
-entity Service {
+entity OfferedService {
   name String required,
   description String,
   duration Integer,
@@ -85,14 +85,14 @@ enum PaymentStatus {
 }
 
 relationship OneToMany {
-  Business{services} to Service{business}
+  Business{services} to OfferedService{business}
   Business{reservations} to Reservation{business}
   Business{payments} to Payment{business}
   Business{customers} to Customer{business}
 }
 
 relationship ManyToOne {
-  Reservation{service} to Service
+  Reservation{service} to OfferedService
   Reservation{customer} to Customer
   Payment{reservation} to Reservation
   Payment{customer} to Customer
@@ -101,4 +101,4 @@ relationship ManyToOne {
 dto * with mapstruct
 service all with serviceClass
 paginate Reservation, Business, Customer with pagination
-paginate Service with infinite-scroll
+paginate OfferedService with infinite-scroll
