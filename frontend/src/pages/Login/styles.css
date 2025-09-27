@@ -1,0 +1,148 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.login-card {
+  width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: white;
+  animation: fadeIn 0.8s ease-in-out;
+  transform-origin: center;
+}
+
+.login-card {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 28px;
+  padding-top: 10px;
+}
+
+.login-header h2 {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  animation: slideDown 0.6s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-form {
+  margin-top: 24px;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.login-form-forgot {
+  float: right;
+  color: #1890ff;
+  transition: color 0.3s;
+}
+
+.login-form-forgot:hover {
+  color: #40a9ff;
+  text-decoration: underline;
+}
+
+.login-form-button {
+  height: 44px;
+  font-size: 16px;
+  margin-top: 20px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #1890ff, #40a9ff);
+  border: none;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.login-form-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+  background: linear-gradient(90deg, #40a9ff, #1890ff);
+}
+
+.login-form-button:active {
+  transform: translateY(1px);
+}
+
+/* Form alanları için özel stiller */
+.ant-input-affix-wrapper {
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s;
+  height: 44px;
+  margin-bottom: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.ant-input-affix-wrapper:hover,
+.ant-input-affix-wrapper:focus {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.ant-form-item {
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.ant-form-item:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.ant-form-item:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.ant-form-item:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+.ant-form-item:nth-child(4) {
+  animation-delay: 0.8s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

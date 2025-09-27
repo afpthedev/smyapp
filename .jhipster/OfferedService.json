@@ -1,0 +1,43 @@
+{
+  "annotations": {
+    "changelogDate": "20250927051310"
+  },
+  "applications": [
+    "ReservationApp"
+  ],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "required"
+      ]
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "duration",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "price",
+      "fieldType": "BigDecimal"
+    }
+  ],
+  "name": "OfferedService",
+  "pagination": "infinite-scroll",
+  "relationships": [
+    {
+      "otherEntityName": "business",
+      "otherEntityRelationshipName": "services",
+      "relationshipName": "business",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}
