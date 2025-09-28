@@ -25,7 +25,7 @@ import isBetween from 'dayjs/plugin/isBetween';
 import Topbar from '../../components/Topbar';
 import '../../styles/workspace.css';
 import './styles.css';
-import { reservationService, type Reservation, type ReservationStatus } from '../../services/api';
+import { publicReservationService, reservationService, type Reservation, type ReservationStatus } from '../../services/api';
 
 dayjs.extend(isBetween);
 
@@ -56,6 +56,16 @@ const timelineColors: Record<ReservationStatus, string> = {
   COMPLETED: '#6b7280',
 };
 
+interface CreateReservationFormValues {
+  date: Dayjs;
+  status: ReservationStatus;
+  notes?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
 const Reservations: React.FC = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +78,7 @@ const Reservations: React.FC = () => {
   const [approveLoading, setApproveLoading] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [approvalNotes, setApprovalNotes] = useState('');
-  const [form] = Form.useForm<{ date: Dayjs; status: ReservationStatus; notes?: string }>();
+  const [form] = Form.useForm<CreateReservationFormValues>();
 
   const loadReservations = useCallback(async () => {
     try {
@@ -87,13 +97,16 @@ const Reservations: React.FC = () => {
     loadReservations();
   }, [loadReservations]);
 
-  const handleCreateReservation = async (values: { date: Dayjs; status: ReservationStatus; notes?: string }) => {
+  const handleCreateReservation = async (values: CreateReservationFormValues) => {
     try {
       setCreateLoading(true);
-      await reservationService.create({
-        date: values.date.toISOString(),
-        status: values.status,
+      await publicReservationService.create({
+        reservationDate: values.date.toISOString(),
         notes: values.notes,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        phone: values.phone,
       });
       message.success('Rezervasyon başarıyla oluşturuldu.');
       setCreateModalOpen(false);
@@ -425,6 +438,25 @@ const Reservations: React.FC = () => {
         cancelText="İptal"
       >
         <Form form={form} layout="vertical" onFinish={handleCreateReservation} initialValues={{ status: 'PENDING' as ReservationStatus }}>
+          <Form.Item name="firstName" label="Ad" rules={[{ required: true, message: 'Ad giriniz.' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="lastName" label="Soyad" rules={[{ required: true, message: 'Soyad giriniz.' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            label="E-posta"
+            rules={[
+              { required: true, message: 'E-posta giriniz.' },
+              { type: 'email', message: 'Geçerli bir e-posta adresi giriniz.' },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item name="phone" label="Telefon" rules={[{ required: true, message: 'Telefon numarası giriniz.' }]}>
+            <Input />
+          </Form.Item>
           <Form.Item name="date" label="Rezervasyon Tarihi" rules={[{ required: true, message: 'Rezervasyon tarihini seçiniz.' }]}>
             <DatePicker showTime format="DD.MM.YYYY HH:mm" className="reservation-create-date-picker" style={{ width: '100%' }} />
           </Form.Item>
