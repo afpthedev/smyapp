@@ -9,6 +9,7 @@ import {
   authService,
   businessService,
   reservationService,
+  resolveImageUrl,
   type AdminUser,
   type Business,
   type Reservation,
@@ -198,7 +199,7 @@ const Topbar: React.FC = () => {
             menu={{ items: profileMenuItems, onClick: handleProfileMenuClick }}
           >
             <button type="button" className="topbar-profile" aria-haspopup="menu">
-              <Avatar src={user?.imageUrl} size={40} icon={<UserOutlined />} />
+              <Avatar src={resolveImageUrl(user?.imageUrl)} size={40} icon={<UserOutlined />} />
               <span className="topbar-profile-name">
                 {[user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.login || 'Kullanıcı'}
               </span>
