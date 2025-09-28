@@ -132,6 +132,11 @@ export const resolveImageUrl = (imageUrl?: string | null) => {
   return `${base}${imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`}`;
 };
 
+export const fetchAvatar = async (url: string) => {
+  const response = await api.get(url, { responseType: 'blob' });
+  return URL.createObjectURL(response.data);
+};
+
 interface ListParams {
   page?: number;
   size?: number;

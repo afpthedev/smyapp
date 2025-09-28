@@ -14,6 +14,7 @@ const initialAvatar = 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState<string>(initialAvatar);
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [account, setAccount] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -28,6 +29,15 @@ const Profile: React.FC = () => {
   };
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
+
+  useEffect(() => {
+    // Revoke the object URL when the component unmounts or when a new one is created.
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [objectUrl]);
 
   useEffect(() => {
     let isMounted = true;
@@ -80,8 +90,10 @@ const Profile: React.FC = () => {
     }
 
     const previousUrl = resolveImageUrl(account?.imageUrl) || initialAvatar;
-    const previewUrl = URL.createObjectURL(file);
-    setAvatarUrl(previewUrl);
+    const newObjectUrl = URL.createObjectURL(file);
+
+    setObjectUrl(newObjectUrl);
+    setAvatarUrl(newObjectUrl);
     setAvatarUploading(true);
 
     accountService
@@ -104,7 +116,6 @@ const Profile: React.FC = () => {
       })
       .finally(() => {
         setAvatarUploading(false);
-        URL.revokeObjectURL(previewUrl);
       });
 
     return Upload.LIST_IGNORE;
@@ -152,8 +163,8 @@ const Profile: React.FC = () => {
   const passwordRules = [
     { required: true, message: 'Bu alan zorunludur.' },
     {
-      min: 8,
-      message: 'Şifre en az 8 karakter olmalıdır.',
+      min: 5,
+      message: 'Şifre en az 5 karakter olmalıdır.',
     },
   ];
 

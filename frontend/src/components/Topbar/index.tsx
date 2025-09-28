@@ -9,7 +9,7 @@ import {
   authService,
   businessService,
   reservationService,
-  resolveImageUrl,
+  fetchAvatar, // Import fetchAvatar
   type AdminUser,
   type Business,
   type Reservation,
@@ -50,6 +50,7 @@ const Topbar: React.FC = () => {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [business, setBusiness] = useState<Business | null>(null);
   const [recentReservations, setRecentReservations] = useState<Reservation[]>([]);
+  const [avatarUrl, setAvatarUrl] = useState<string>(); // Add avatarUrl state
 
   useEffect(() => {
     let isMounted = true;
@@ -89,6 +90,30 @@ const Topbar: React.FC = () => {
       isMounted = false;
     };
   }, []);
+
+  // Add useEffect for fetching avatar
+  useEffect(() => {
+    if (user?.imageUrl) {
+      let objectUrl: string;
+      const getAvatar = async () => {
+        try {
+          // We don't need to resolve the URL here, as user.imageUrl is already the full path
+          objectUrl = await fetchAvatar(user.imageUrl!);
+          setAvatarUrl(objectUrl);
+        } catch (error) {
+          console.error('Failed to fetch avatar', error);
+        }
+      };
+
+      getAvatar();
+
+      return () => {
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+        }
+      };
+    }
+  }, [user?.imageUrl]);
 
   const notifications = useMemo(
     () =>
@@ -199,7 +224,7 @@ const Topbar: React.FC = () => {
             menu={{ items: profileMenuItems, onClick: handleProfileMenuClick }}
           >
             <button type="button" className="topbar-profile" aria-haspopup="menu">
-              <Avatar src={resolveImageUrl(user?.imageUrl)} size={40} icon={<UserOutlined />} />
+              <Avatar src={avatarUrl} size={40} icon={<UserOutlined />} />
               <span className="topbar-profile-name">
                 {[user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.login || 'Kullanıcı'}
               </span>

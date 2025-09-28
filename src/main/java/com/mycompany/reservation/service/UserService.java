@@ -335,7 +335,7 @@ public class UserService {
             .map(user -> {
                 user.setProfileImage(imageBytes);
                 user.setProfileImageContentType(contentType);
-                user.setImageUrl("/api/users/" + user.getLogin() + "/avatar");
+                user.setImageUrl("/users/" + user.getLogin() + "/avatar");
                 userRepository.save(user);
                 this.clearUserCaches(user);
                 LOG.debug("Updated avatar for User: {}", user.getLogin());

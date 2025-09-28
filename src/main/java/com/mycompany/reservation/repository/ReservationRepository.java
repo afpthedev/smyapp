@@ -2,6 +2,7 @@ package com.mycompany.reservation.repository;
 
 import com.mycompany.reservation.domain.Reservation;
 import com.mycompany.reservation.domain.enumeration.ReservationStatus;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -57,8 +58,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
             select count(distinct r.customer.id)
             from Reservation r
             where (:businessId is null or r.business.id = :businessId)
-              and (:startDate is null or r.date >= :startDate)
-              and (:endDate is null or r.date <= :endDate)
         """
     )
     long countDistinctCustomersByFilters(
