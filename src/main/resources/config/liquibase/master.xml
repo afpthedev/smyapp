@@ -12,6 +12,7 @@
   <property name="timeType" value="time(6)" dbms="postgresql"/>
 
   <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
+  <include file="config/liquibase/changelog/20250314000000_added_user_avatar.xml" relativeToChangelogFile="false"/>
   <include file="config/liquibase/changelog/20250927051210_added_entity_Business.xml" relativeToChangelogFile="false"/>
   <include file="config/liquibase/changelog/20250927051310_added_entity_OfferedService.xml"
            relativeToChangelogFile="false"/>

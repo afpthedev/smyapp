@@ -1,13 +1,13 @@
 import axios, { type AxiosResponse } from 'axios';
 
 const API_URL = 'http://localhost:8080/api';
+const API_BASE_URL = API_URL.replace(/\/?api\/?$/, '');
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
+
+api.defaults.headers.common.Accept = 'application/json';
 
 api.interceptors.request.use(
   config => {
@@ -119,6 +119,24 @@ export interface AdminUser {
   authorities?: string[];
 }
 
+export const resolveImageUrl = (imageUrl?: string | null) => {
+  if (!imageUrl) {
+    return undefined;
+  }
+
+  if (/^https?:\/\//i.test(imageUrl)) {
+    return imageUrl;
+  }
+
+  const base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  return `${base}${imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`}`;
+};
+
+export const fetchAvatar = async (url: string) => {
+  const response = await api.get(url, { responseType: 'blob' });
+  return URL.createObjectURL(response.data);
+};
+
 interface ListParams {
   page?: number;
   size?: number;
@@ -165,6 +183,11 @@ export const accountService = {
   },
   changePassword(currentPassword: string, newPassword: string) {
     return api.post<void>('/account/change-password', { currentPassword, newPassword });
+  },
+  updateAvatar(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<AdminUser>('/account/avatar', formData);
   },
 };
 

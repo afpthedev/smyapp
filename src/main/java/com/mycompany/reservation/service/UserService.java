@@ -8,13 +8,13 @@ import com.mycompany.reservation.repository.UserRepository;
 import com.mycompany.reservation.security.AuthoritiesConstants;
 import com.mycompany.reservation.security.SecurityUtils;
 import com.mycompany.reservation.service.dto.AdminUserDTO;
+import com.mycompany.reservation.service.dto.UserAvatarDTO;
 import com.mycompany.reservation.service.dto.UserDTO;
-
+import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import tech.jhipster.security.RandomUtil;
 
 /**
@@ -316,6 +317,30 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<String> getAuthorities() {
         return authorityRepository.findAll().stream().map(Authority::getName).toList();
+    }
+
+    public Optional<UserAvatarDTO> getUserAvatar(String login) {
+        return userRepository
+            .findOneByLogin(login.toLowerCase())
+            .filter(user -> user.getProfileImage() != null && user.getProfileImage().length > 0)
+            .map(user -> new UserAvatarDTO(user.getProfileImage(), user.getProfileImageContentType()));
+    }
+
+    public Optional<AdminUserDTO> updateUserAvatar(String login, MultipartFile file) throws IOException {
+        byte[] imageBytes = file.getBytes();
+        String contentType = file.getContentType();
+
+        return userRepository
+            .findOneByLogin(login.toLowerCase())
+            .map(user -> {
+                user.setProfileImage(imageBytes);
+                user.setProfileImageContentType(contentType);
+                user.setImageUrl("/users/" + user.getLogin() + "/avatar");
+                userRepository.save(user);
+                this.clearUserCaches(user);
+                LOG.debug("Updated avatar for User: {}", user.getLogin());
+                return new AdminUserDTO(user);
+            });
     }
 
     private void clearUserCaches(User user) {

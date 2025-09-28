@@ -4,7 +4,7 @@ import { Avatar, Button, Card, Col, Divider, Form, Input, Row, Space, Spin, Typo
 import type { UploadProps } from 'antd';
 import { ArrowLeftOutlined, CameraOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import { accountService, type AdminUser } from '../../services/api';
+import { accountService, resolveImageUrl, type AdminUser } from '../../services/api';
 import './styles.css';
 
 const { Title, Text } = Typography;
@@ -14,9 +14,11 @@ const initialAvatar = 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState<string>(initialAvatar);
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [account, setAccount] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -29,6 +31,15 @@ const Profile: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
+    // Revoke the object URL when the component unmounts or when a new one is created.
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [objectUrl]);
+
+  useEffect(() => {
     let isMounted = true;
 
     const loadAccount = async () => {
@@ -38,7 +49,7 @@ const Profile: React.FC = () => {
           return;
         }
         setAccount(response.data);
-        const imageUrl = response.data.imageUrl || initialAvatar;
+        const imageUrl = resolveImageUrl(response.data.imageUrl) || initialAvatar;
         setAvatarUrl(imageUrl);
         form.setFieldsValue({
           firstName: response.data.firstName,
@@ -78,14 +89,36 @@ const Profile: React.FC = () => {
       return Upload.LIST_IGNORE;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAvatarUrl(reader.result as string);
-      setAccount(prev => (prev ? { ...prev, imageUrl: reader.result as string } : prev));
-    };
-    reader.readAsDataURL(file);
+    const previousUrl = resolveImageUrl(account?.imageUrl) || initialAvatar;
+    const newObjectUrl = URL.createObjectURL(file);
 
-    return false;
+    setObjectUrl(newObjectUrl);
+    setAvatarUrl(newObjectUrl);
+    setAvatarUploading(true);
+
+    accountService
+      .updateAvatar(file)
+      .then(response => {
+        const updatedAccount = response.data;
+        setAccount(prev => (prev ? { ...prev, ...updatedAccount } : updatedAccount));
+        const resolved = resolveImageUrl(updatedAccount.imageUrl) || previousUrl;
+        setAvatarUrl(resolved);
+        messageApi.success('Profil fotoğrafınız güncellendi.');
+      })
+      .catch(error => {
+        if (axios.isAxiosError(error)) {
+          const responseMessage = error.response?.data?.message;
+          messageApi.error(responseMessage || 'Profil fotoğrafı yüklenirken bir hata oluştu.');
+        } else {
+          messageApi.error('Profil fotoğrafı yüklenirken bir hata oluştu.');
+        }
+        setAvatarUrl(previousUrl);
+      })
+      .finally(() => {
+        setAvatarUploading(false);
+      });
+
+    return Upload.LIST_IGNORE;
   };
 
   const handleFormFinish = async (values: Record<string, string>) => {
@@ -100,12 +133,13 @@ const Profile: React.FC = () => {
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,
-        imageUrl: avatarUrl,
+        imageUrl: account.imageUrl,
         langKey: account.langKey ?? 'tr',
       };
 
       await accountService.updateProfile(payload);
       setAccount(payload);
+      setAvatarUrl(resolveImageUrl(payload.imageUrl) || initialAvatar);
       messageApi.success('Profil ayarlarınız başarıyla güncellendi.');
 
       if (values.currentPassword && values.newPassword) {
@@ -129,8 +163,8 @@ const Profile: React.FC = () => {
   const passwordRules = [
     { required: true, message: 'Bu alan zorunludur.' },
     {
-      min: 8,
-      message: 'Şifre en az 8 karakter olmalıdır.',
+      min: 5,
+      message: 'Şifre en az 5 karakter olmalıdır.',
     },
   ];
 
@@ -160,8 +194,20 @@ const Profile: React.FC = () => {
               <div className="profile-avatar-wrapper">
                 <div className="profile-avatar-frame">
                   <Avatar src={avatarUrl} size={96} icon={<UserOutlined />} alt="Kullanıcı profil fotoğrafı" />
-                  <Upload accept="image/*" showUploadList={false} beforeUpload={handleAvatarUpload} className="profile-avatar-upload">
-                    <Button type="primary" shape="circle" icon={<CameraOutlined />} aria-label="Profil fotoğrafı yükle" />
+                  <Upload
+                    accept="image/*"
+                    showUploadList={false}
+                    beforeUpload={handleAvatarUpload}
+                    className="profile-avatar-upload"
+                    disabled={avatarUploading}
+                  >
+                    <Button
+                      type="primary"
+                      shape="circle"
+                      icon={<CameraOutlined />}
+                      aria-label="Profil fotoğrafı yükle"
+                      loading={avatarUploading}
+                    />
                   </Upload>
                 </div>
                 <Text className="profile-avatar-hint">PNG, JPG veya WEBP formatı · Maksimum 2MB</Text>
