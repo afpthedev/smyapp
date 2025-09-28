@@ -91,14 +91,12 @@ const Topbar: React.FC = () => {
     };
   }, []);
 
-  // Add useEffect for fetching avatar
   useEffect(() => {
     if (user?.imageUrl) {
       let objectUrl: string;
       const getAvatar = async () => {
         try {
-          // We don't need to resolve the URL here, as user.imageUrl is already the full path
-          objectUrl = await fetchAvatar(user.imageUrl!);
+          objectUrl = await fetchAvatar(user.imageUrl!.replace(/^\/?api/, ''));
           setAvatarUrl(objectUrl);
         } catch (error) {
           console.error('Failed to fetch avatar', error);
