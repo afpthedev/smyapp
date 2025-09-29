@@ -59,6 +59,8 @@ public class CacheConfiguration {
             createCache(cm, com.mycompany.reservation.domain.Customer.class.getName());
             createCache(cm, com.mycompany.reservation.domain.Reservation.class.getName());
             createCache(cm, com.mycompany.reservation.domain.Payment.class.getName());
+            createCache(cm, com.mycompany.reservation.domain.FinanceDocument.class.getName());
+            createCache(cm, com.mycompany.reservation.domain.FinanceEntry.class.getName());
             createCache(cm, com.mycompany.reservation.service.ReservationService.CUSTOMER_RESERVATION_SUMMARY_CACHE);
             // jhipster-needle-ehcache-add-entry
         };

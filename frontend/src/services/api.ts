@@ -36,6 +36,7 @@ api.interceptors.response.use(
 export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
 export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
 export type PaymentMethod = 'CREDIT_CARD' | 'DEBIT_CARD' | 'CASH' | 'APPLE_PAY' | 'GOOGLE_PAY' | 'OTHER';
+export type FinanceEntryType = 'INCOME' | 'EXPENSE';
 
 export interface Business {
   id: number;
@@ -105,6 +106,23 @@ export interface Payment {
   reservation?: Reservation;
   customer?: Customer;
   business?: Business;
+}
+
+export interface FinanceDocument {
+  id: number;
+  fileName: string;
+  contentType: string;
+  size: number;
+  uploadedAt?: string;
+}
+
+export interface FinanceEntry {
+  id: number;
+  entryDate: string;
+  type: FinanceEntryType;
+  amount: number;
+  description?: string;
+  document?: FinanceDocument;
 }
 
 export interface AdminUser {
@@ -247,6 +265,50 @@ export const paymentService = {
       items: response.data,
       total: parseTotal(response),
     } satisfies PaginatedResponse<Payment>;
+  },
+};
+
+interface FinanceEntryRequest {
+  entryDate: string;
+  type: FinanceEntryType;
+  amount: number;
+  description?: string;
+  documentId?: number;
+}
+
+const mapFinanceEntryRequest = (payload: FinanceEntryRequest) => ({
+  entryDate: payload.entryDate,
+  type: payload.type,
+  amount: payload.amount,
+  description: payload.description,
+  document: payload.documentId ? { id: payload.documentId } : undefined,
+});
+
+export const financeEntryService = {
+  async list() {
+    const response = await api.get<FinanceEntry[]>('/finance-entries');
+    return response.data;
+  },
+  async create(payload: FinanceEntryRequest) {
+    const response = await api.post<FinanceEntry>('/finance-entries', mapFinanceEntryRequest(payload));
+    return response.data;
+  },
+  delete(id: number) {
+    return api.delete(`/finance-entries/${id}`);
+  },
+};
+
+export const financeDocumentService = {
+  async upload(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post<FinanceDocument>('/finance-documents', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+  download(id: number) {
+    return api.get(`/finance-documents/${id}/download`, { responseType: 'blob' });
   },
 };
 
