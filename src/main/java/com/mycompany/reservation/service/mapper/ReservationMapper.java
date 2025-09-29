@@ -17,7 +17,7 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface ReservationMapper extends EntityMapper<ReservationDTO, Reservation> {
     @Mapping(target = "service", source = "service", qualifiedByName = "offeredServiceId")
-    @Mapping(target = "customer", source = "customer", qualifiedByName = "customerId")
+    @Mapping(target = "customer", source = "customer", qualifiedByName = "customerSummary")
     @Mapping(target = "business", source = "business", qualifiedByName = "businessId")
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "userLogin", source = "user.login")
@@ -35,6 +35,16 @@ public interface ReservationMapper extends EntityMapper<ReservationDTO, Reservat
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     CustomerDTO toDtoCustomerId(Customer customer);
+
+    @Named("customerSummary")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "firstName", source = "firstName")
+    @Mapping(target = "lastName", source = "lastName")
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "phone", source = "phone")
+    @Mapping(target = "notes", source = "notes")
+    CustomerDTO toDtoCustomerSummary(Customer customer);
 
     @Named("businessId")
     @BeanMapping(ignoreByDefault = true)

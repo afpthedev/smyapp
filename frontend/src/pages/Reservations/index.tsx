@@ -244,7 +244,15 @@ const Reservations: React.FC = () => {
 
     return todaysReservations.map(reservation => {
       const customerName = [reservation.customer?.firstName, reservation.customer?.lastName].filter(Boolean).join(' ') || 'Müşteri';
+      const customerNotes = reservation.customer?.notes?.trim();
       const serviceName = reservation.service?.name ?? 'Hizmet bilgisi yok';
+      const detailParts = [customerName];
+      if (customerNotes) {
+        detailParts.push(customerNotes);
+      }
+      if (serviceName) {
+        detailParts.push(serviceName);
+      }
       return {
         color: timelineColors[reservation.status],
         dot: <ClockCircleOutlined style={{ fontSize: 14 }} />,
@@ -252,7 +260,7 @@ const Reservations: React.FC = () => {
           <div className="reservations-timeline-item">
             <Text className="reservations-timeline-time">{dayjs(reservation.date).format('HH:mm')}</Text>
             <Text className="reservations-timeline-title">{statusLabels[reservation.status]}</Text>
-            <Text className="reservations-timeline-description">{`${customerName} · ${serviceName}`}</Text>
+            <Text className="reservations-timeline-description">{detailParts.join(' · ')}</Text>
           </div>
         ),
       };
@@ -372,13 +380,19 @@ const Reservations: React.FC = () => {
                   locale={{ emptyText: <Empty description="Seçilen filtrelerle eşleşen kayıt bulunmuyor." /> }}
                   renderItem={item => {
                     const customerName = [item.customer?.firstName, item.customer?.lastName].filter(Boolean).join(' ') || 'Müşteri';
+                    const customerNotes = item.customer?.notes?.trim();
                     const serviceName = item.service?.name ?? 'Hizmet bilgisi yok';
                     return (
                       <List.Item className="reservations-item" key={item.id}>
                         <List.Item.Meta
                           avatar={<Avatar>{customerName.charAt(0)}</Avatar>}
                           title={customerName}
-                          description={<span className="reservations-service">{serviceName}</span>}
+                          description={
+                            <div className="reservations-item-details">
+                              {customerNotes && <span className="reservations-notes">{customerNotes}</span>}
+                              {serviceName && <span className="reservations-service">{serviceName}</span>}
+                            </div>
+                          }
                         />
                         <div className="reservations-meta">
                           <Text className="reservations-time">{dayjs(item.date).format('DD MMM YYYY HH:mm')}</Text>
